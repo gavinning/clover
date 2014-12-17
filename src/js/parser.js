@@ -1,40 +1,68 @@
-function parseArguments(arr) {
-	var css = []
+// Linco.clover Parser
 
-	arr.forEach(function(animate){
-		css.push(buildAnimate(animate))
-	})
+;(function(){
 
-	return css;
-}
+var Parser;
 
-function buildStyle(data) {
-	var str1 = [data.name, data.time, data.count, data.function, data.delay, data.mode].join(' ')
-	var str2 = [data.className, '{ -webkit-animation:', str1, '}'].join(' ')
-	return str2
-}
+Parser = function(){
 
-function buildFrame(data) {
-	var frame, frames = [];
-	var obj = data.frames;
-
-	for(var i in obj){
-		frames.push(i + ' {' + obj[i].join(';') + '}')
+	this.extend = function(obj){
+		$.extend(this, obj)
 	}
 
-	// 格式化 keyframes
-	frame = ['@-webkit-keyframes', data.name, '{', frames.join(' '), '}'].join(' ')
+	this.extend({
 
-	return frame
+		parseArguments: function(obj) {
+			var self = this;
+			var css = [];
+			$.each(obj, function(key, value){
+				css.push(self.buildAnimate(value))
+			})
+			return css;
+		},
+
+		buildStyle: function(data) {
+			var str1 = [data.name, data.time, data.count, data.function, data.delay, data.mode].join(' ')
+			var str2 = [data.className, '{ -webkit-animation:', str1, '}'].join(' ')
+			return str2
+		},
+
+		buildFrame: function(data) {
+			var frame, frames = [];
+			var obj = data.frames;
+
+			for(var i in obj){
+				frames.push(i + ' {' + obj[i].join(';') + '}')
+			}
+
+			// 格式化 keyframes
+			frame = ['@-webkit-keyframes', data.name, '{', frames.join(' '), '}'].join(' ')
+
+			return frame
+		},
+
+		buildAnimate: function(data) {
+			return this.buildStyle(data) + this.buildFrame(data)
+		},
+
+		view: function(animates) {
+			return this.parseArguments(animates)
+		}
+
+	})
+
+	return this;
 }
 
-function buildAnimate(data) {
-	return buildStyle(data) + buildFrame(data)
-}
+var parser = new Parser;
 
-function view(animates) {
-	var css = parseArguments(animates)
-	var style = document.head.getElementsByTagName('style')[0];
+// console.log(parser)
 
-	style.innerHTML =  style.innerHTML + css.join('')
-}
+
+
+
+
+
+
+window.Parser = Parser;
+})(); // end
