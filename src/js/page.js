@@ -7,13 +7,14 @@ clover = {
 	name: 'clover',
 	author: 'gavinning',
 	homepage: 'http://www.ilinco.com',
-	github: 'https://github.com/gavinning/clover'
+	github: 'https://github.com/gavinning/clover',
+	exports: {}
 }
 
 // 缓存动画相关数据
 cache = {
 
-	// 已格式化的动画参数
+	// 占坑
 	animate: {},
 
 	// 原始动画参数
@@ -77,10 +78,6 @@ tags = {
 	// 动画过程输入对象
 	processInput: function(){
 		return $('.forms').find('.process-input')
-	},
-
-	effectInput: function(name){
-		return $('.animate-data').find('.process-input[effect='+name+']')
 	},
 
 	// 动画停驻状态
@@ -196,35 +193,41 @@ ia = {
 	bind: function(){
 		$.each(clover.events, function(){
 			this()
-		})
+		});
+
+		// 绑定插件
+		window.onload = function(){
+			$.each(clover.exports, function(){
+				this()
+			});
+		}
 	},
 
 	// 生成guid，作为唯一标识对动画对象进行标记
 	guid: function(){
 		var time, random, id;
 
+		// 时间因子
 		time = (new Date()).getTime();
 
+		// 随机因子
 		random = function(){
 			return Math.random()*Math.random()*time
-		}
+		};
 
+		// 短位guid
 		id = function(){
 			return ((time + random() * 0x10000) | 0).toString(16).slice(1)
-		}
+		};
 
+		// 长位guid
 		return id() + id() + id()
-	},
-
-	// 获取当前帧
-	getCurrentProcess: function(){
-		return tags.currentProcess().attr('value')
 	},
 
 	// 获取所有帧
 	getAllProcess: function(){
 		var process = [];
-		tags.process.each(function(i, item){
+		tags.process().each(function(i, item){
 			process.push(item.getAttribute('value'))
 		})
 		return process
@@ -245,11 +248,14 @@ ia = {
 	replayAnimateInput: function(){
 		var data = cache.inputValue[clover.current.guid()];
 
+		if(!data.base || $.isEmptyObject(data.base)) return;
+
 		// 清空所有动画表单
 		this.clearAnimateInput();
 
+		// 重播数据
 		$.each(data.base || {}, function(key, value){
-			value ? tags.input(key).val(value) : '';
+			value.toString() ? tags.input(key).val(value) : '';
 		});
 
 		// 重播帧动画表单数据
@@ -267,43 +273,46 @@ ia = {
 
 		// 重播数据
 		$.each(data.frames[process] || {}, function(key, value){
-			value ? tags.input(key).val(value) : '';
+			value.toString() ? tags.input(key).val(value) : '';
 		})
 	},
 
 	// 获取当前选中元素动画对象
 	getElementAnimate: function(){
-		return clover.current.animate() ?
-			clover.current.animate() : this.createElementAnimate();
+		return clover.current.animate() || this.createElementAnimate();
 	},
 
 	// 创建新动画对象
 	createElementAnimate: function(guid){
 		guid = guid || clover.current.guid();
 		// 创建原始数据存储对象
-		cache.inputValue[guid] = {guid: guid, frames: {}};
-
+		cache.inputValue[guid] = {guid: guid, base: {}, frames: {}};
 		return cache.inputValue[guid];
 	},
 
+	// 播放动画
 	play: function(){
-		var element = $('[guid="'+ clover.current.guid() +'"]');
-		var style = $('<style id="cloverViewStyle" type="text/css"></style>');
-		var guid = clover.current.guid();
+		var tag, css;
 
-		// 编译当前动画过程
-		cache.animate[guid] = parser.compile(cache.inputValue[guid]);
+		// 检查当前页面动画对象是否为空，为空则返回
+		if($.isEmptyObject(clover.cache.inputValue)) return;
 
-		console.log(parser.view(cache.animate).join(''))
-			
-		if(element.hasClass('fadeIn')){
-			element.removeClass('fadeIn').reflow().addClass('fadeIn')
-		} else {
-			style.append(parser.view(cache.animate).join(''))
-			$(document.head).append(style)
-			element.addClass('fadeIn')
-		}
+		tag = tags.animateElements();
+		css = parser.render(cache.inputValue);
 
+		// 添加样式到dom树
+		this.appendAnimate(css)
+
+		// 执行动画
+		tag.removeClass('fadeIn').reflow().addClass('fadeIn')
+	},
+
+	// 添加动画相关样式到dom树
+	appendAnimate: function(data){
+		var css = $('<style id="cloverViewStyle" type="text/css"></style>');
+		$('#cloverViewStyle').remove();
+		css.append(data);
+		$(document.head).append(css)
 	}
 
 }
@@ -323,7 +332,7 @@ clover.current = {
 
 	// 返回动画对象动画帧
 	process: function(){
-		return ia.getCurrentProcess()
+		return tags.currentProcess().attr('value')
 	}
 }
 
@@ -337,14 +346,14 @@ clover.events = {
 			// 检查当前动画
 			if(!clover.current.guid()){
 				return alert('请选择或上传一个动画对象')
-			}
+			};
 
 			// 切换帧时，更新动画数据
 			clover.data.save();
 			// 切换到下一帧
 			$(this).addClass('selected').siblings('.selected').removeClass('selected');
 			// 清空动画过程参数
-			ia.clearProcessInput()
+			ia.clearProcessInput();
 
 			// 重播记录的原始数据
 			ia.replayProcessInput();
@@ -381,7 +390,7 @@ clover.events = {
 		})
 	},
 
-	// 用于测试
+
 	test: function(){
 		$('#btnTest').click(function(){
 			clover.data.save();
@@ -402,13 +411,18 @@ clover.data = {
 	save: function(){
 		var guid = clover.current.guid();
 
+		// 检查动画对象是否存在
+		ia.getElementAnimate();
+
+		if(!guid) return;
+
 		// 存储原始数据
 		cache.inputValue[guid].base = {
 			className: '.fadeIn[guid="'+ guid +'"]',
 			name: clover.name + guid,
 			count: tags.count().val() || 1,
 			mode: tags.mode().val() || 'forwards',
-			time: tags.time().val().toString() || 1,
+			time: tags.time().val() || '1s',
 			delay: tags.delay().val().toString() || 0,
 			function: tags.fn().val().toString() || 'ease'
 		}
@@ -419,15 +433,27 @@ clover.data = {
 	// 保存当前动画过程
 	saveFrame: function(guid){
 		var process = clover.current.process();
+		var inputs = clover.tags.processInput();
+		var sign, frame;
 
-		// 存储原始数据
-		cache.inputValue[guid].frames[process] = {
-			opacity: tags.opacity().val().toString(),
-			rotate: tags.rotate().val().toString(),
-			scale: tags.scale().val().toString(),
-			translate3d: tags.translate3d().val().toString()
-		}
+		// 检查frame对象是否存在
+		cache.inputValue[guid].frames[process] = cache.inputValue[guid].frames[process] || {};
+		frame = cache.inputValue[guid].frames[process];
+
+		// 存储相关数据
+		inputs.each(function(){
+			sign = this.getAttribute('sign');
+			frame[sign] = tags.input(sign).val().toString();
+		});
 	}
+
+	// 格式化单位
+	// parseUnit: function(tag){
+	// 	var value = tag.val();
+	// 	return value ?
+	// 		value + (tag.attr('unit') || ''):
+	// 		value;
+	// }
 }
 
 

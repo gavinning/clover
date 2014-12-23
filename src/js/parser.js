@@ -5,28 +5,31 @@
 var Parser;
 
 Parser = function(){
+	var self = this;
 
 	this.extend = function(obj){
 		$.extend(this, obj)
 	}
 
 	this.extend({
-
+		// 开始编译css样式
 		parseArguments: function(obj) {
-			var self = this;
 			var css = [];
 			$.each(obj, function(key, value){
 				css.push(self.buildAnimate(value))
 			})
-			return css;
+			return css.join('');
 		},
 
+		// 编译css
 		buildStyle: function(data) {
-			var str1 = [data.base.name, data.base.time, data.base.count, data.base.function, data.base.delay, data.base.mode].join(' ')
-			var str2 = [data.base.className, '{ -webkit-animation:', str1, '}'].join(' ')
-			return str2
+			var base = data.base;
+			var str1 = [base.name, base.time, base.count, base.function, base.delay, base.mode].join(' ');
+			var str2 = [base.className, '{ -webkit-animation:', str1, '}'].join(' ');
+			return str2;
 		},
 
+		// 编译key-frames
 		buildFrame: function(data) {
 			var frame, frames = [];
 			var obj = data.frames;
@@ -41,26 +44,30 @@ Parser = function(){
 			return frame
 		},
 
+		// 编译动画数据为css
 		buildAnimate: function(data) {
 			return this.buildStyle(data) + this.buildFrame(data)
 		},
 
-		view: function(animates) {
-			return this.parseArguments(animates)
+		// 编译器入口
+		render: function(data){
+			var obj = {};
+
+			// 分段格式化动画数据
+			$.each(data, function(key, value){
+				obj[key] = self.compile(value)
+			})
+
+			return this.parseArguments(obj)
 		},
 
+		// 格式化单个动画对象
 		compile: function(data){
-			var self = this;
 			var res = {frames: {}};
 			var cssFunction = 'rotate rotateX rotateY rotateZ scale translate3d translate translateZ'.split(' ');
 
 			res.guid = data.guid;
 			res.base = data.base;
-			// 编译动画时间参数
-			res.base.time = this.parseTime(data.base.time);
-			res.base.delay = this.parseTime(data.base.delay);
-
-			console.log(data.base.time, this.parseTime(data.base.time), 1234)
 
 			// 编译frames对象里的动画过程
 			$.each(data.frames, function(process, css){
@@ -93,8 +100,13 @@ Parser = function(){
 			/* res 数据结构
 			
 				res = {
-					time: String,
-					delay: String,
+					guid, String,
+
+					base{
+						time: String,
+						delay: String
+						// key: value
+					},
 
 					frames: {
 						'0%': ['opacity: 0', 'rotate(0)'],
@@ -105,24 +117,19 @@ Parser = function(){
 			*/
 		},
 
-		parseTime: function(time) {
-			time = time || 0;
-			if(Number(time) === 0 || String(time).indexOf('s') >=0){
-				return time;
-			}
-			return time + 's';
-		},
-
+		// 格式化普通样式
 		parseStyle: function(key, value) {
 			return value ?
 				key + ':' + value : '';
 		},
 
+		// 格式化Function样式
 		parseFunction: function(key, value) {
 			return value ?
 				key + '('+ value +')' : '';
 		},
 
+		// 格式化Transform样式
 		parseTransform: function (arr) {
 			return arr.length ?
 				'-webkit-transform: ' + arr.join(' ') : '';

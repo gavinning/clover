@@ -25,6 +25,9 @@ input{
 	outline: none;
 	text-align: center;
 }
+.btn:active{
+	background: #999;
+}
 .ap{
 	position: absolute;
 	left: 50%;
@@ -76,6 +79,19 @@ input{
 	box-shadow: 0 0 10px 2px rgba(0, 165, 237, 0.3);
 }
 
+.forms label{
+	display: block;
+	border: 1px solid rgba(255,255,255,0.1);
+	padding: 12px;
+	margin: 10px 0;
+}
+.forms .u-title{
+	color: #fff;
+	display: block;
+	font-size: 14px;
+	margin-bottom: 4px;
+}
+
 </style>
 </head>
 <body>
@@ -85,23 +101,59 @@ input{
 
 		<div class="forms animate-args">
 			<h3>动画参数</h3>
-			<input sign="time" class="animate-input" type="text" placeholder="动画时间">
-			<input sign="delay" class="animate-input" type="text" placeholder="延迟时间">
-			<input sign="function" class="animate-input" type="text" placeholder="动画轨迹">
+
+
+			<label class="effect-label" for="">
+				<strong class="u-title">动画时间</strong>
+				<input sign="time" class="animate-input" type="text" value="1s">
+				<input name="time" type="range" min="0" max="100" value="10" algorithm="0.1" unit="s">
+			</label>
+
+			<label class="effect-label" for="">
+				<strong class="u-title">动画延迟时间</strong>
+				<input sign="delay" class="animate-input" type="text" value="0">
+				<input name="delay" type="range" min="0" max="100" value="0" algorithm="0.1" unit="s">
+			</label>
+
+			<label class="effect-label" for="">
+				<strong class="u-title">动画轨迹</strong>
+				<input sign="function" class="animate-input" type="text" value="ease">
+			</label>
+			
+			
 		</div>
 
 		<div class="forms animate-effect">
 			<h3>动画特效</h3>
-			<input sign="opacity" class="animate-input process-input" type="text" placeholder="opacity">
-			<input sign="rotate" class="animate-input process-input" type="text" placeholder="rotate">
-			<input sign="scale" class="animate-input process-input" type="text" placeholder="scale">
-			<input sign="translate3d" class="animate-input process-input" type="text" placeholder="translate3d">
+
+			<label class="effect-label" for="">
+				<strong class="u-title">透明度</strong>
+				<input sign="opacity" class="animate-input process-input" type="text" placeholder="opacity">
+				<input name="opacity" type="range" min="0" max="100" value="50" algorithm="0.01">
+			</label>
+
+			<label class="effect-label" for="">
+				<strong class="u-title">旋转</strong>
+				<input sign="rotate" class="animate-input process-input" type="text" placeholder="rotate">
+				<input name="rotate" type="range" min="0" max="360" value="180" algorithm="1" unit="deg">
+			</label>
+
+			<label class="effect-label" for="">
+				<strong class="u-title">缩放</strong>
+				<input sign="scale" class="animate-input process-input" type="text" placeholder="scale">
+				<input name="scale" type="range" min="0" max="100" value="100" algorithm="0.01">
+			</label>
+<!-- 			
+			<input sign="top" class="animate-input process-input" type="text" placeholder="top">
+			<input sign="bottom" class="animate-input process-input" type="text" placeholder="bottom">
+			<input sign="left" class="animate-input process-input" type="text" placeholder="left">
+			<input sign="right" class="animate-input process-input" type="text" placeholder="right">
+ -->
 		</div>
 
 	</div>
 	<div id="dragCanvas" class="content">
-		<img guid="354fa4c557aca01e0182d4" class="ap" width="160" src="images/1.png">
-		<img guid="cef2a8d1595884afd2f0" class="ap" width="160" src="images/1.png" style="top: 0; margin-top: 50px;">
+		<img guid="354fa4c557aca01e0182d4" class="ap selected" width="160" src="images/1.png">
 	</div>
 	<div class="aside">
 		
@@ -123,7 +175,7 @@ input{
 <script src="js/zepto.min.js"></script>
 <script src="js/parser.js"></script>
 <script src="js/page.js"></script>
-<script src="js/data.js"></script>
+<script src="js/mod/effectInput.js"></script>
 <script>
 
 
