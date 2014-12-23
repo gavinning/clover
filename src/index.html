@@ -49,6 +49,13 @@ input{
 	height: 100%;
 }
 
+.forms{
+	margin-bottom: 20px;
+}
+.forms h3{
+	color: #fff;
+}
+
 .animate-process .input{
 
 }
@@ -76,14 +83,19 @@ input{
 <div class="page">
 	<div class="aside">
 
-		<div class="animate-data">
-			<input class="animate-input" id="aTime" type="text" placeholder="动画时间">
-			<input class="animate-input" id="aDelay" type="text" placeholder="延迟时间">
-			<input class="animate-input" id="aFunction" type="text" placeholder="动画轨迹">
-			<input class="animate-input process-input" id="aOpacity" type="text" effect="opacity" placeholder="opacity">
-			<input class="animate-input process-input" id="aRotate" type="text" placeholder="rotate">
-			<input class="animate-input process-input" id="aScale" type="text" placeholder="scale">
-			<input class="animate-input process-input" id="aTranslate3d" type="text" placeholder="translate3d">
+		<div class="forms animate-args">
+			<h3>动画参数</h3>
+			<input sign="time" class="animate-input" type="text" placeholder="动画时间">
+			<input sign="delay" class="animate-input" type="text" placeholder="延迟时间">
+			<input sign="function" class="animate-input" type="text" placeholder="动画轨迹">
+		</div>
+
+		<div class="forms animate-effect">
+			<h3>动画特效</h3>
+			<input sign="opacity" class="animate-input process-input" type="text" placeholder="opacity">
+			<input sign="rotate" class="animate-input process-input" type="text" placeholder="rotate">
+			<input sign="scale" class="animate-input process-input" type="text" placeholder="scale">
+			<input sign="translate3d" class="animate-input process-input" type="text" placeholder="translate3d">
 		</div>
 
 	</div>
@@ -97,6 +109,7 @@ input{
 		<button class="btn" id="btnView">保存并预览动画</button>
 		<button class="btn" id="newPage">新建页面</button>
 		<button class="btn" id="newFrame">新建动画过程</button>
+		<button class="btn" id="delFrame">删除动画过程</button>
 
 		<div class="animate-process">
 			<button class="btn first selected" value="0%">0%</button>
