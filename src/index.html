@@ -3,96 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Document</title>
-<style>
-body, div, h1, h2, h3, h4, h5, p, ul, li{margin: 0; padding: 0;}
-ul,li{list-style: none;}
-img{display: block;}
-body{
-	background: #333;
-}
-input{
-	margin: 4px;
-}
-.btn, .animate-process .input{
-	display: block;
-	width: 80%;
-	height: 36px;
-	margin: 0 auto;
-	border-radius: 4px;
-	background: #fff;
-	border: none;
-	margin-bottom: 10px;
-	outline: none;
-	text-align: center;
-}
-.btn:active{
-	background: #999;
-}
-.ap{
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	margin: -80px 0 0 -80px;
-}
-.page{
-	display: -webkit-box;
-	min-height: 600px;
-	height: 700px;
-}
-.aside{
-	width: 20%;
-	border-right: 1px solid #ccc;
-	border-left: 1px solid #ccc;
-	padding: 10px;
-	position: relative;
-}
-.content{
-	position: relative;
-	-webkit-box-flex: 1;
-	height: 100%;
-}
-
-.forms{
-	margin-bottom: 20px;
-}
-.forms h3{
-	color: #fff;
-}
-
-.animate-process .input{
-
-}
-.animate-process .btn:hover{
-	background: rgb(0, 165, 237);
-	color: #fff;
-}
-.animate-process .btn.selected{
-	color: #fff;
-	background: rgb(0, 165, 237);
-}
-.animate-process .btn.edit{
-	color: #000;
-	background: #fff;
-}
-
-.content .selected{
-	box-shadow: 0 0 10px 2px rgba(0, 165, 237, 0.3);
-}
-
-.forms label{
-	display: block;
-	border: 1px solid rgba(255,255,255,0.1);
-	padding: 12px;
-	margin: 10px 0;
-}
-.forms .u-title{
-	color: #fff;
-	display: block;
-	font-size: 14px;
-	margin-bottom: 4px;
-}
-
-</style>
+<link rel="stylesheet" href="css/home.css">
 </head>
 <body>
 
@@ -143,6 +54,11 @@ input{
 				<input sign="scale" class="animate-input process-input" type="text" placeholder="scale">
 				<input name="scale" type="range" min="0" max="100" value="100" algorithm="0.01">
 			</label>
+
+			<label class="effect-label" for="">
+				<strong class="u-title">位移</strong>
+				<input sign="translate3d" class="animate-input process-input" type="text" placeholder="translate3d">
+			</label>
 <!-- 			
 			<input sign="top" class="animate-input process-input" type="text" placeholder="top">
 			<input sign="bottom" class="animate-input process-input" type="text" placeholder="bottom">
@@ -168,7 +84,10 @@ input{
 			<!-- <input class="btn" type="text" value="50%"> -->
 			<button class="btn last" value="100%">100%</button>
 		</div>
+	</div>
 
+	<div class="css-panel">
+		
 	</div>
 </div>
 
@@ -178,6 +97,8 @@ requirejs.config({
     baseUrl : './js',
     paths : {
         zepto : 'libs/zepto.min',
+        drag  : 'libs/dom-drag',
+        guid  : 'mods/guid',
         parser: 'mods/parser',
         clover: 'pages/home'
     },

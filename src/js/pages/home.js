@@ -1,6 +1,5 @@
-define(['zepto', 'parser'], function($, Parser){
-var tags, ia, cache, clover, inputs;
-
+define(['zepto', 'parser', 'guid'], function($, Parser, guid){
+var tags, ia, cache, clover;
 var parser = new Parser;
 
 clover = {
@@ -24,42 +23,45 @@ cache = {
 }
 
 
-/*
-// 缓存数据模型
 
+// 缓存数据模型
+/*
 cache = {
-	
-	animate:{
-	
-		animateGuid: {
-			time: tags.time.val(),
-			delay: tags.time.val()
-		}
-	},
 
 	inputValue: {
 
 		animateGuid: {
-			time: tags.time.val(),
-			delay: tags.time.val()
+			init: {
+				width: String,
+				height: String,
+				opacity: Number
+			},
+
+			cssInput: String,
+
+			base: {
+				className: String,
+				count: Number,
+				delay: String,
+				time: String,
+				name: 'clover' + guid,
+				mode: String
+			},
+			
+			frames: {
+				process|'0%': {
+					opacity: Number,
+					rotate: String
+				}
+			}
 		}
-	},
-
-	tmp: {
-	
 	}
+
 }
-
-
 */
 
-// Zepto扩展重绘
-$.fn.reflow =  function (){
-    this.each(function(){
-        this.nodeType && this.nodeType==1 && getComputedStyle(this).zoom;
-    }); 
-    return this;
-};
+
+
 
 
 // 页面对象
@@ -183,46 +185,18 @@ tags = {
 	guid: function(guid){
 		return this.canvas().find('[guid='+ guid +']')
 	}
-}
+};
+
+// UI事件绑定
+clover.bind = function(){
+	$.each(clover.events, function(){
+		this()
+	});
+};
 
 
 // 界面交互相关
 ia = {
-
-	// 界面交互绑定
-	bind: function(){
-		$.each(clover.events, function(){
-			this()
-		});
-
-		// 绑定插件
-		window.onload = function(){
-			$.each(clover.exports, function(){
-				this()
-			});
-		}
-	},
-
-	// 生成guid，作为唯一标识对动画对象进行标记
-	guid: function(){
-		var time, random, id;
-
-		// 时间因子
-		time = (new Date()).getTime();
-
-		// 随机因子
-		random = function(){
-			return Math.random()*Math.random()*time
-		};
-
-		// 短位guid
-		id = function(){
-			return ((time + random() * 0x10000) | 0).toString(16).slice(1)
-		};
-
-		// 长位guid
-		return id() + id() + id()
-	},
 
 	// 获取所有帧
 	getAllProcess: function(){
@@ -286,8 +260,13 @@ ia = {
 	createElementAnimate: function(guid){
 		guid = guid || clover.current.guid();
 		// 创建原始数据存储对象
-		cache.inputValue[guid] = {guid: guid, base: {}, frames: {}};
+		cache.inputValue[guid] = this.createAnimateObject(guid);
 		return cache.inputValue[guid];
+	},
+
+	// 创建动画对象原型 
+	createAnimateObject: function(guid){
+		return {guid: guid, init: {}, base: {}, frames: {}}
 	},
 
 	// 播放动画
@@ -313,9 +292,22 @@ ia = {
 		$('#cloverViewStyle').remove();
 		css.append(data);
 		$(document.head).append(css)
-	}
+	},
 
-}
+	// 计算动画元素位移位置信息
+	calcTranslate3d: function(){
+		var animate, tag, x, y, z;
+
+		animate = clover.cache.inputValue[clover.current.guid()];
+		tag = clover.current.element();
+
+		x = tag.css('left').replace('px', '') - animate.init.left.replace('px', '');
+		y = tag.css('top').replace('px', '') - animate.init.top.replace('px', '');
+		z = 0;
+
+		return {x: x, y: y, z: z}
+	}
+};
 
 // 返回当前环境变量
 clover.current = {
@@ -333,8 +325,13 @@ clover.current = {
 	// 返回动画对象动画帧
 	process: function(){
 		return tags.currentProcess().attr('value')
+	},
+
+	// 返回当前动画对象元素
+	element: function(){
+		return tags.currentElement();
 	}
-}
+};
 
 // 页面事件，所有事件将会在页面初始化之后绑定
 clover.events = {
@@ -390,6 +387,7 @@ clover.events = {
 		})
 	},
 
+	// 参数输入控件事件绑定
 	effectInput: function(){
 		$('.effect-label').delegate('input[type="range"]', 'input', function(){
 			var value, algorithm, unit;
@@ -405,17 +403,19 @@ clover.events = {
 		})
 	},
 
+
 	test: function(){
 		$('#btnTest').click(function(){
 			clover.data.save();
 
 			// console.log(currentAnimate)
 			
+			ia.calcTranslate3d()
 
 			console.log(cache)
 		})
 	}
-}
+};
 
 // 数据存储
 clover.data = {
@@ -447,7 +447,7 @@ clover.data = {
 	saveFrame: function(guid){
 		var process = clover.current.process();
 		var inputs = clover.tags.processInput();
-		var sign, frame;
+		var sign, frame, element;
 
 		// 检查frame对象是否存在
 		cache.inputValue[guid].frames[process] = cache.inputValue[guid].frames[process] || {};
@@ -458,6 +458,17 @@ clover.data = {
 			sign = this.getAttribute('sign');
 			frame[sign] = tags.input(sign).val().toString();
 		});
+
+		// 存储初始化数据
+		if(process === '0%'){
+			element = clover.current.element();
+			$.extend(cache.inputValue[guid].init, {
+				top: element.css('top'),
+				left: element.css('left')
+			});
+		};
+
+		// 存储位移位置信息
 	}
 
 	// 格式化单位
@@ -467,22 +478,17 @@ clover.data = {
 	// 		value + (tag.attr('unit') || ''):
 	// 		value;
 	// }
-}
-
-
-
-ia.bind()
+};
 
 
 clover.tags = tags;
 clover.ia = ia;
 clover.cache = cache;
 
-// window.clover = clover;
+window.clover = clover;
 
 return clover;
-
-}) // end
+});
 
 
 

@@ -21,6 +21,20 @@ Parser = function(){
 			return css.join('');
 		},
 
+		// 编译初始化css
+		buildInit: function(data){
+			var style = ['[guid="', data.guid, '"]{'];
+			var css = [];
+			$.each(data.init, function(key, value){
+				css.push(key + ':' + value);
+			});
+
+			style.push(css.join(';'));
+			style.push('}');
+
+			return style.join('');
+		},
+
 		// 编译css
 		buildStyle: function(data) {
 			var base = data.base;
@@ -46,7 +60,7 @@ Parser = function(){
 
 		// 编译动画数据为css
 		buildAnimate: function(data) {
-			return this.buildStyle(data) + this.buildFrame(data)
+			return this.buildInit(data) + this.buildStyle(data) + this.buildFrame(data)
 		},
 
 		// 编译器入口
@@ -68,6 +82,7 @@ Parser = function(){
 
 			res.guid = data.guid;
 			res.base = data.base;
+			res.init = data.init;
 
 			// 编译frames对象里的动画过程
 			$.each(data.frames, function(process, css){
