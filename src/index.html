@@ -172,13 +172,21 @@ input{
 	</div>
 </div>
 
-<script src="js/zepto.min.js"></script>
-<script src="js/parser.js"></script>
-<script src="js/page.js"></script>
-<script src="js/mod/effectInput.js"></script>
+<script data-main="main.js" src="js/require.js"></script>
 <script>
-
-
+requirejs.config({
+    baseUrl : './js',
+    paths : {
+        zepto : 'libs/zepto.min',
+        parser: 'mods/parser',
+        clover: 'pages/home'
+    },
+    shim:{
+        'zepto': { 
+            exports: 'Zepto'
+        }
+    }
+});
 </script>
 </body>
 </html>
