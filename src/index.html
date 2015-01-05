@@ -38,6 +38,11 @@
 			<h3>动画特效</h3>
 
 			<label class="effect-label" for="">
+				<strong class="u-title">位移</strong>
+				<input sign="translate3d" class="animate-input process-input" type="text" data-value="0,0,0" value="0,0,0">
+			</label>
+
+			<label class="effect-label" for="">
 				<strong class="u-title">透明度</strong>
 				<input sign="opacity" class="animate-input process-input" type="text" placeholder="opacity">
 				<input name="opacity" type="range" min="0" max="100" value="50" algorithm="0.01">
@@ -54,11 +59,6 @@
 				<input sign="scale" class="animate-input process-input" type="text" placeholder="scale">
 				<input name="scale" type="range" min="0" max="100" value="100" algorithm="0.01">
 			</label>
-
-			<label class="effect-label" for="">
-				<strong class="u-title">位移</strong>
-				<input sign="translate3d" class="animate-input process-input" type="text" placeholder="translate3d">
-			</label>
 <!-- 			
 			<input sign="top" class="animate-input process-input" type="text" placeholder="top">
 			<input sign="bottom" class="animate-input process-input" type="text" placeholder="bottom">
@@ -73,7 +73,8 @@
 	</div>
 	<div class="aside">
 		
-		<button class="btn" id="btnTest">获取数据</button>
+		<!-- <button class="btn" id="btnTest">获取数据</button> -->
+		<button class="btn" id="resetAnimate">初始化动画状态</button>
 		<button class="btn" id="btnView">保存并预览动画</button>
 		<button class="btn" id="newPage">新建页面</button>
 		<button class="btn" id="newFrame">新建动画过程</button>
