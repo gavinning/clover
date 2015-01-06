@@ -3,6 +3,7 @@ ul,li{list-style: none;}
 img{display: block;}
 body{
 	background: #333;
+	overflow: hidden;
 }
 input{
 	margin: 4px;
@@ -24,6 +25,7 @@ input{
 }
 .ap{
 	position: absolute;
+	max-width: 200px;
 }
 .page{
 	display: -webkit-box;

@@ -69,13 +69,13 @@
 
 	</div>
 	<div id="dragCanvas" class="content">
-		<img guid="354fa4c557aca01e0182d4" class="ap selected" width="160" src="images/1.png">
+		<!-- <img guid="354fa4c557aca01e0182d4s" class="ap" width="160" src="images/2.png"> -->
 	</div>
 	<div class="aside">
 		
 		<!-- <button class="btn" id="btnTest">获取数据</button> -->
-		<button class="btn" id="resetAnimate">初始化动画状态</button>
-		<button class="btn" id="btnView">保存并预览动画</button>
+		<button class="btn" id="clearAnimate">清空当前动画</button>
+		<button class="btn" id="btnView">保存并预览当前动画</button>
 		<button class="btn" id="newPage">新建页面</button>
 		<button class="btn" id="newFrame">新建动画过程</button>
 		<button class="btn" id="delFrame">删除动画过程</button>
@@ -95,19 +95,20 @@
 <script data-main="main.js" src="js/require.js"></script>
 <script>
 requirejs.config({
-    baseUrl : './js',
-    paths : {
-        zepto : 'libs/zepto.min',
-        drag  : 'libs/dom-drag',
-        guid  : 'mods/guid',
-        parser: 'mods/parser',
-        clover: 'pages/home'
-    },
-    shim:{
-        'zepto': { 
-            exports: 'Zepto'
-        }
-    }
+	baseUrl : './js',
+	paths : {
+		zepto 		: 'libs/zepto.min',
+		dragDom 	: 'libs/dom-drag',
+		dragInpage 	: 'mods/drag',
+		guid 		: 'mods/guid',
+		parser 		: 'mods/parser',
+		clover 		: 'pages/home'
+	},
+	shim:{
+		'zepto': { 
+			exports: 'Zepto'
+		}
+	}
 });
 </script>
 </body>

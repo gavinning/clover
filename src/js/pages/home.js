@@ -1,5 +1,5 @@
-define(['zepto', 'parser', 'guid'], function($, Parser, guid){
-var tags, ia, cache, clover;
+define(['zepto', 'parser', 'guid', 'dragDom', 'dragInpage'], function($, Parser, createGuid, dragDom, dragInpage){
+var tags, ia, cache, clover, isAnimate;
 var parser = new Parser;
 
 clover = {
@@ -22,7 +22,13 @@ cache = {
 	tmp: {}
 }
 
-
+// 存储动画状态
+isAnimate = {};
+/*
+isAnimate = {
+	animateGuid: true
+}
+*/
 
 // 缓存数据模型
 /*
@@ -144,6 +150,10 @@ tags = {
 		return $('#resetAnimate')
 	},
 
+	clearAnimate: function(){
+		return $('#clearAnimate')
+	},
+
 	// 新建项目
 	createProject: function(){
 		return $('#createProject')
@@ -157,6 +167,11 @@ tags = {
 	// 新增动画过程
 	addProcess: function(){
 		return $('#addProcess')
+	},
+
+	// 动画过程父级
+	processParent: function(){
+		return $('.animate-process');
 	},
 
 	// 动画过程
@@ -305,15 +320,26 @@ ia = {
 		return {guid: guid, place: {}, init: {}, base: {}, frames: {}}
 	},
 
+	// 重建动画对象
+	reBuildAnimate: function(guid){
+		guid = guid || clover.current.guid();
+		clover.cache.inputValue[guid] = this.createAnimateObject(guid);
+		return clover.cache.inputValue[guid];
+	},
+
 	// 播放动画
-	play: function(){
-		var tag, css;
+	play: function(guid){
+		var tag, css, data = {};
+
+		guid ?
+			data[guid] = cache.inputValue[guid]:
+			data = cache.inputValue;
 
 		// 检查当前页面动画对象是否为空，为空则返回
 		if($.isEmptyObject(clover.cache.inputValue)) return;
 
 		tag = tags.animateElements();
-		css = parser.render(cache.inputValue);
+		css = parser.render(data);
 
 		// 添加样式到dom树
 		this.appendAnimate(css);
@@ -351,11 +377,11 @@ ia = {
 	// 3.基于以上原因，初始化时，将位置信息更新为用户设定的初始化位置信息
 	resetAnimatePlace: function(data){
 		data = data || clover.current.animate();
-		tags.animateElements().css({top: data.init.top || 0, left: data.init.left || 0})
+		tags.animateElements().css({top: data.place['0%'].top || 0, left: data.place['0%'].left || 0})
 	},
 
 	// 清空动画状态，解决因translate3d位移引起的动画元素定位不准确的问题
-	resetAnimate: function(){
+	clearFadeIn: function(){
 		tags.animateElements().removeClass('fadeIn')
 	},
 
@@ -365,9 +391,74 @@ ia = {
 		clover.current.element().css({top: data.place['100%'].top || 0, left: data.place['100%'].left || 0})
 	},
 
+	// 格式化时间
 	formatTime: function(time){
 		return time.match(/ms/) ? time.replace('ms', '') : Number(time.replace('s', ''))*1000
+	},
+
+	// 只切换帧，不保存上一帧状态
+	changeProcess: function(process){
+		// 切换到下一帧
+		tags.processParent().find('[value="'+process+'"]')
+			.addClass('selected').siblings('.selected').removeClass('selected');
+
+		// 清空动画过程参数
+		ia.clearProcessInput();
+
+		// 重播记录的原始数据
+		ia.replayProcessInput();
+
+		// 回归动画元素当前帧位置信息
+		ia.replayProcessPlace();
+
+		// 首次计算当前关键帧的位移信息
+		// 选中当前帧时即开始计算，有时候最后一帧是初始位置
+		// ia.calcTranslate3d();
+	},
+
+	// 切换动画元素
+	changeElement: function(tag){
+		// 清空动画过程参数
+		ia.clearAnimateInput();
+
+		// 重播记录的原始数据
+		ia.replayAnimateInput();
+
+		tags.canvas().find(tag).addClass('selected').siblings('.selected').removeClass('selected')
+	},
+
+	// 绑定动画元素拖拽事件
+	drag: function(tag, src) {
+		var x, xm, y, ym, canvas, ap;
+
+		// 检查是否存在src
+		// 如果有src则异步load图片
+		// 图片加载完成之后绑定拖拽事件
+		if(src){
+			return this.loadImg(src, function(){
+				ia.drag(tag);
+			})
+		};
+
+		// 绑定拖拽事件
+		ap = $(tag);
+		canvas = tags.canvas();
+
+		x = 0;
+		y = 0;
+		xm = x + canvas.width() - ap.width();
+		ym = y + canvas.height() - ap.height();
+
+		dragDom.init(document.querySelector(tag), null, x, xm, y, ym);
+	},
+
+	// 加载图片
+	loadImg: function(src, callback){
+		var img = new Image();
+		img.src = src;
+		img.onload = callback || function(){};
 	}
+
 };
 
 // 返回当前环境变量
@@ -375,11 +466,12 @@ clover.current = {
 
 	// 返回当前动画对象guid
 	guid: function(){
-		return tags.currentElement().attr('guid')
+		return this.element().attr('guid')
 	},
 
 	// 返回当前动画对象动画数据
 	animate: function(){
+		console.log(this.element())
 		return cache.inputValue[this.guid()]
 	},
 
@@ -438,16 +530,22 @@ clover.events = {
 		});
 	},
 
-	// 预览并保存动画
+	// 预览并保存当前选中动画
 	viewAnimate: function(){
 		var st;
 
 		tags.saveView().click(function(){
-			var data, time;
+			var data, time, guid;
 
+			guid = clover.current.guid();
+
+			// 检查当前元素是否处于动画状态
+			if(isAnimate[guid]) return;
+			isAnimate[guid] = true;
+
+			// 计算位移
+			ia.calcTranslate3d();
 			// 存储当前状态数据
-			// 防止最后一次操作数据丢失
-			// todo: 有一个bug，当关键帧切换到非最后一帧时，再次播放动画会重复记录一个错误的当前帧位置信息
 			clover.data.save();
 
 			// 获取当前动画数据
@@ -461,30 +559,49 @@ clover.events = {
 			// 设置动画状态停驻问题
 			clearTimeout(st)
 			st = setTimeout(function(){
+
 				// 删除动画过程，避免动画过程对现有动画元素造成的影响
-				ia.resetAnimate();
+				ia.clearFadeIn();
 				// 使动画元素停驻在动画结束的位置
 				ia.goAnimateLast(data);
+				// 切换当前帧为最后一帧
+				// 修正因动画状态结束停驻的位置，对下一次数据保存操作造成的影响
+				ia.changeProcess('100%');
+
+				// 改变当前动画过程标识
+				// 增强程序可靠性
+				isAnimate[guid] = false;
+
 			}, time);
 
 			// 播放动画
-			ia.play();
+			ia.play(guid);
 		})
 	},
 
-	// 初始化动画状态
-	resetAnimate: function(){
-		tags.resetAnimate().click(function(){
-			// 清空动画元素动画过程
-			ia.resetAnimate();
-			// 回归动画元素初始化位置
-			ia.resetAnimatePlace();
-		})
+	// 清空当前元素动画
+	clearAnimate: function(){
+		tags.clearAnimate().click(function(){
+			var guid = clover.current.guid();
+
+			// 删除fadeIn类
+			ia.clearFadeIn();
+			// 清空动画帧输入框数据
+			ia.clearProcessInput();
+			// 切换到第一帧
+			ia.changeProcess('0%');
+			// 重建动画对象
+			ia.reBuildAnimate(guid);
+			// 初始化动画对象
+			clover.data.saveAll();
+			// 设置当前动画过程为false
+			isAnimate[guid] = false;
+		});
 	},
 
 	// 动画元素
 	animateElements: function(){
-		tags.animateElements().click(function(){
+		$(document).delegate('.ap', 'click', function(){
 			// 存储当前状态数据
 			if(clover.current.guid()){
 				clover.data.save();
@@ -503,16 +620,6 @@ clover.events = {
 		})
 	},
 
-	// 创建动画
-	// 拖拽图片进入画布在这里定义
-	// 图片拖进画布之后创建动画对象
-	createAnimate: function(){
-		// 检查动画对象是否存在
-		ia.getElementAnimate();
-		// 为动画对象存储初始化数据
-		clover.data.save();
-	},
-
 	// 参数输入控件事件绑定
 	effectInput: function(){
 		$('.effect-label').delegate('input[type="range"]', 'input', function(){
@@ -529,34 +636,45 @@ clover.events = {
 		})
 	},
 
-	// 拖拽元素交互，自动计算位移信息，并绑定相关数据
-	elementPlace: function(){
-		var target;
+	// 监听动画过程
+	isAnimate: function(){
+		// 检查动画过程
+		document.addEventListener('webkitAnimationEnd', function(e){
+			isAnimate[e.target.getAttribute('guid')] = false;
+		}, false);
+	},
 
-		$(document).on('mousedown', function(e){
-			// 记录当前target为动画元素
-			if($(e.target).hasClass('ap')){
-				target = e.target;
-			}
+	// 拖拽动画元素到画布
+	dragInpage: function(){
+		dragInpage(document, function(url){
+			var gid = createGuid();
+			var tag = '.ap[guid="'+gid+'"]';
+
+			// 添加动画元素到画布
+			tags.canvas().append('<img guid="'+gid+'" src="'+url+'" class="ap selected">');
+			// 创建元素动画
+			ia.createElementAnimate(gid);
+			// 选定当前拖拽元素
+			ia.changeElement(tag);
+			// 检查动画对象是否存在
+			ia.getElementAnimate();
+			// 为动画对象存储初始化数据
+			clover.data.saveAll(gid);
+			// 绑定元素拖动事件
+			ia.drag(tag, url);
+			// 动画帧指向0%
+			ia.changeProcess('0%');
 		});
+	},
 
-		$(document).on('mouseup', function(e){
+	initAnimate: function(){
+		if(!clover.current.guid()) return;
 
-			// 检查当前元素标记
-			if(target){
-
-				// 第一步执行数据存储
-				clover.data.save();
-
-				// 二次计算当前关键帧的位移信息
-				// 当前动画元素被拖动之后再次计算拖动后的位置信息
-				ia.calcTranslate3d();
-
-				// 清空当前动画元素标记
-				target = null;
-			}
-
-		});
+		ia.drag('.ap[guid="'+clover.current.guid()+'"]');
+		// 检查动画对象是否存在
+		ia.getElementAnimate();
+		// 为动画对象存储初始化数据
+		clover.data.saveAll();
 	},
 
 	test: function(){
@@ -575,15 +693,26 @@ clover.events = {
 // 数据存储
 clover.data = {
 
-	// 保存所有动画信息
+	// 保存所有动画当前帧信息
 	save: function(){
 		var process = clover.current.process();
 		var data = clover.current.animate();
 
+		this.saveInit(data, process);
 		this.saveBase(data, process);
 		this.saveFrame(data, process);
-		this.saveInit(data, process);
 		this.savePlace(data, process);
+	},
+
+	// 保存所有动画所有帧信息
+	saveAll: function(){
+		var process = clover.current.process();
+		var data = clover.current.animate();
+
+		this.saveInit(data, process);
+		this.saveBase(data, process);
+		this.saveAllFrame(data, process);
+		this.saveAllPlace(data, process);
 	},
 
 	// 保存当前动画基本信息
@@ -624,6 +753,16 @@ clover.data = {
 		});
 	},
 
+	saveAllFrame: function(data){
+		var btnProcess = tags.process();
+
+		data = data || clover.current.animate();
+
+		$.each(btnProcess, function(){
+			clover.data.saveFrame(data, this.getAttribute('value'))
+		});
+	},
+
 	// 存储初始化数据
 	saveInit: function(data, process){
 		var element = clover.current.element();
@@ -634,8 +773,8 @@ clover.data = {
 		if(process === '0%'){
 			element = clover.current.element();
 			$.extend(data.init, {
-				top: element.css('top'),
-				left: element.css('left')
+				top: element.css('top') || 0,
+				left: element.css('left') || 0
 			});
 		};
 	},
@@ -650,10 +789,20 @@ clover.data = {
 		process = process || clover.current.process();
 
 		data.place[process] = {
-			top: top,
-			left: left
+			top: top === 'auto' ? 0 : top,
+			left: left === 'auto' ? 0 : left
 		}
+	},
 
+	// 记录所有帧信息
+	saveAllPlace: function(data){
+		var btnProcess = tags.process();
+
+		data = data || clover.current.animate();
+
+		$.each(btnProcess, function(){
+			clover.data.savePlace(data, this.getAttribute('value'))
+		});
 	}
 
 	// 格式化单位
@@ -669,6 +818,7 @@ clover.data = {
 clover.tags = tags;
 clover.ia = ia;
 clover.cache = cache;
+clover.isAnimate = isAnimate;
 
 window.clover = clover;
 
