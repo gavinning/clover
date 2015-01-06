@@ -39,13 +39,6 @@ cache = {
 				left: String
 			},
 
-			last: {
-				top: String,
-				left: String
-			},
-
-			cssInput: String,
-
 			// 记录帧位置信息
 			place: {
 				process|'0%': {
@@ -309,7 +302,7 @@ ia = {
 
 	// 创建动画对象原型 
 	createAnimateObject: function(guid){
-		return {guid: guid, place: {}, init: {}, last: {}, base: {}, frames: {}}
+		return {guid: guid, place: {}, init: {}, base: {}, frames: {}}
 	},
 
 	// 播放动画
@@ -369,7 +362,7 @@ ia = {
 	// 使得动画元素行内样式的left top值停留在动画结束的位置
 	goAnimateLast: function(data){
 		data = data || clover.current.animate();
-		clover.current.element().css({top: data.last.top || 0, left: data.last.left || 0})
+		clover.current.element().css({top: data.place['100%'].top || 0, left: data.place['100%'].left || 0})
 	},
 
 	formatTime: function(time){
@@ -398,6 +391,10 @@ clover.current = {
 	// 返回当前动画对象元素
 	element: function(){
 		return tags.currentElement();
+	},
+
+	prevProcess: function(){
+		return null;
 	}
 };
 
@@ -408,10 +405,16 @@ clover.events = {
 	// 点击切换帧时的交互逻辑
 	animateProcess: function(){
 		tags.process().click(function(){
+			var process = clover.current.process();
 
 			// 检查当前动画
 			if(!clover.current.guid()){
 				return alert('请选择或上传一个动画对象')
+			};
+
+			// 重载上一帧方法
+			clover.current.prevProcess = function(){
+				return process;
 			};
 
 			// 切换帧时，更新动画数据
@@ -504,7 +507,10 @@ clover.events = {
 	// 拖拽图片进入画布在这里定义
 	// 图片拖进画布之后创建动画对象
 	createAnimate: function(){
+		// 检查动画对象是否存在
 		ia.getElementAnimate();
+		// 为动画对象存储初始化数据
+		clover.data.save();
 	},
 
 	// 参数输入控件事件绑定
@@ -523,7 +529,7 @@ clover.events = {
 		})
 	},
 
-	// 自动计算位移信息，并绑定相关数据
+	// 拖拽元素交互，自动计算位移信息，并绑定相关数据
 	elementPlace: function(){
 		var target;
 
@@ -569,42 +575,43 @@ clover.events = {
 // 数据存储
 clover.data = {
 
-	// 保存当前动画
+	// 保存所有动画信息
 	save: function(){
-		var guid = clover.current.guid();
 		var process = clover.current.process();
 		var data = clover.current.animate();
 
-		// 检查动画对象是否存在
-		ia.getElementAnimate();
+		this.saveBase(data, process);
+		this.saveFrame(data, process);
+		this.saveInit(data, process);
+		this.savePlace(data, process);
+	},
 
-		if(!guid) return;
+	// 保存当前动画基本信息
+	saveBase: function(data, process){
+		data = data || clover.current.animate();
+		process = process || clover.current.process();
+
+		if(!data.guid) return;
 
 		// 存储原始数据
 		data.base = {
-			className: '.fadeIn[guid="'+ guid +'"]',
-			name: clover.name + guid,
+			className: '.fadeIn[guid="'+ data.guid +'"]',
+			name: clover.name + data.guid,
 			count: tags.count().val() || 1,
 			mode: tags.mode().val() || 'forwards',
 			time: tags.time().val() || '1s',
 			delay: tags.delay().val().toString() || 0,
 			function: tags.fn().val().toString() || 'ease'
-		}
-
-		this.saveFrame(data, guid, process);
-		this.saveLast(data, guid, process);
-		this.savePlace(data, guid, process);
+		};
 	},
 
-	// 保存当前动画过程
-	saveFrame: function(data, guid, process){
+	// 保存当前帧动画过程
+	saveFrame: function(data, process){
 		var inputs = clover.tags.processInput();
-		var sign, frame, element;
+		var sign, frame;
 
-		guid = guid || clover.current.guid();
 		data = data || clover.current.animate();
 		process = process || clover.current.process();
-
 
 		// 检查frame对象是否存在
 		data.frames[process] = data.frames[process] || {};
@@ -615,8 +622,15 @@ clover.data = {
 			sign = this.getAttribute('sign');
 			frame[sign] = tags.input(sign).val().toString();
 		});
+	},
 
-		// 存储初始化数据
+	// 存储初始化数据
+	saveInit: function(data, process){
+		var element = clover.current.element();
+
+		data = data || clover.current.animate();
+		process = process || clover.current.process();
+
 		if(process === '0%'){
 			element = clover.current.element();
 			$.extend(data.init, {
@@ -624,39 +638,22 @@ clover.data = {
 				left: element.css('left')
 			});
 		};
-
-		// 存储位移位置信息
 	},
 
-	// 记录动画元素最终位置信息
-	saveLast: function(data, guid, process){
+	// 记录当前帧位置信息
+	savePlace: function(data, process){
 		var element = clover.current.element();
+		var left = element.css('left');
+		var top = element.css('top');
 
-		guid = guid || clover.current.guid();
-		data = data || clover.current.animate();
-		process = process || clover.current.process();
-
-		// 存储最终位置数据
-		if(process === '100%'){
-			$.extend(data.last, {
-				top: element.css('top'),
-				left: element.css('left')
-			});
-		};
-	},
-
-	// 记录每一帧位置信息
-	savePlace: function(data, guid, process){
-		var element = clover.current.element();
-
-		guid = guid || clover.current.guid();
 		data = data || clover.current.animate();
 		process = process || clover.current.process();
 
 		data.place[process] = {
-			top: element.css('top'),
-			left: element.css('left')
+			top: top,
+			left: left
 		}
+
 	}
 
 	// 格式化单位
