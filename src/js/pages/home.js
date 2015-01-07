@@ -1,14 +1,29 @@
 define(['zepto', 'parser', 'guid', 'dragDom', 'dragInpage'], function($, Parser, createGuid, dragDom, dragInpage){
-var tags, ia, cache, clover, isAnimate;
-var parser = new Parser;
+
+var clover,
+	// dom对象
+	tags,
+	// 界面交互相关方法对象
+	ia,
+	// 数据缓存
+	cache,
+	// 动画状态
+	isAnimate = {},
+	// 定时器
+	st = {},
+	// css编译器
+	parser;
 
 clover = {
 	name: 'clover',
 	author: 'gavinning',
 	homepage: 'http://www.ilinco.com',
 	github: 'https://github.com/gavinning/clover',
-	exports: {}
-}
+	exports: {},
+	fadeIn: '.fadeIn'
+};
+
+parser = new Parser;
 
 // 缓存动画相关数据
 cache = {
@@ -20,18 +35,14 @@ cache = {
 	inputValue: {},
 
 	tmp: {}
-}
+};
 
-// 存储动画状态
-isAnimate = {};
-/*
+/* 数据模型
+
 isAnimate = {
 	animateGuid: true
 }
-*/
 
-// 缓存数据模型
-/*
 cache = {
 
 	inputValue: {
@@ -74,9 +85,10 @@ cache = {
 }
 */
 
-
-
-
+// 获取动画选择器
+clover.tag = function(guid){
+	return '.ap[guid="'+guid+'"]';
+};
 
 // 页面对象
 tags = {
@@ -144,6 +156,11 @@ tags = {
 	// 保存并预览
 	saveView: function(){
 		return $('#btnView')
+	},
+
+	// 预览当前页动画
+	viewPageAnimate: function(){
+		return $('#btnViewPage')
 	},
 
 	resetAnimate: function(){
@@ -279,8 +296,8 @@ ia = {
 
 	// 重播输入对象数据
 	// 只对帧动画表单部分生效
-	replayProcessInput: function(){
-		var data = cache.inputValue[clover.current.guid()];
+	replayProcessInput: function(data){
+		var data = data || clover.current.animate();
 		var process = clover.current.process();
 
 		// 清空帧动画表单
@@ -293,13 +310,14 @@ ia = {
 	},
 
 	// 重播当前动画元素当前帧位置信息
-	replayProcessPlace: function(){
-		var element = clover.current.element();
+	replayProcessPlace: function(data){
+		var data = data || clover.current.animate();
 		var process = clover.current.process();
-		var data = clover.current.animate().place[process] || {};
+		var place = data.place[process] || {};
+		var element = $(clover.tag(data.guid)) || clover.current.element();
 
 		// 还原上次记录当前帧位置信息
-		element.css({left: data.left || 0, top: data.top || 0})
+		element.css({left: place.left || 0, top: place.top || 0})
 	},
 
 	// 获取当前选中元素动画对象
@@ -308,16 +326,41 @@ ia = {
 	},
 
 	// 创建新动画对象
-	createElementAnimate: function(guid){
+	createElementAnimate: function(guid, url){
+		var tag;
+
 		guid = guid || clover.current.guid();
+		tag = clover.tag(guid);
 		// 创建原始数据存储对象
 		cache.inputValue[guid] = this.createAnimateObject(guid);
+
+		// 选定当前拖拽元素
+		ia.changeElement(tag);
+		// 绑定元素拖动事件
+		ia.drag(tag, url);
+		// 动画帧指向0%
+		ia.changeProcess('0%');
+
 		return cache.inputValue[guid];
 	},
 
 	// 创建动画对象原型 
 	createAnimateObject: function(guid){
 		return {guid: guid, place: {}, init: {}, base: {}, frames: {}}
+		// return {
+		// 	guid: guid,
+
+		// 	base: {},
+
+		// 	place: {},
+
+		// 	frames: {},
+
+		// 	init: {
+		// 		left: 0,
+		// 		top: 0
+		// 	}
+		// }
 	},
 
 	// 重建动画对象
@@ -338,33 +381,50 @@ ia = {
 		// 检查当前页面动画对象是否为空，为空则返回
 		if($.isEmptyObject(clover.cache.inputValue)) return;
 
-		tag = tags.animateElements();
+		tag = $(clover.tag(guid));
 		css = parser.render(data);
 
 		// 添加样式到dom树
-		this.appendAnimate(css);
+		this.appendAnimate(css, guid);
 
 		// 执行动画
 		tag.removeClass('fadeIn').reflow().addClass('fadeIn');
 	},
 
 	// 添加动画相关样式到dom树
-	appendAnimate: function(data){
-		var css = $('<style id="cloverViewStyle" type="text/css"></style>');
-		$('#cloverViewStyle').remove();
-		css.append(data);
-		$(document.head).append(css)
+	appendAnimate: function(css, guid){
+		var id, tag;
+
+		id = 'cloverView' + guid;
+		link = $('#' + id);
+		tag = $('<style id="'+id+'" type="text/css"></style>');
+
+		if(link.length){
+			link.html(css)
+		} else {
+			tag.html(css)
+			$(document.head).append(tag)
+		}
+
 	},
 
 	// 计算动画元素位移位置信息
 	calcTranslate3d: function(){
-		var animate, tag, x, y, z;
+		var animate, tag, x, y, z, left, top, initLeft, initTop;
 
 		animate = clover.cache.inputValue[clover.current.guid()];
 		tag = clover.current.element();
 
-		x = tag.css('left').replace('px', '') - animate.init.left.replace('px', '') + 'px';
-		y = tag.css('top').replace('px', '') - animate.init.top.replace('px', '') + 'px';
+		// 当前动画元素位置
+		left = this.removeUnit(tag.css('left') || 0, 'px');
+		top = this.removeUnit(tag.css('top') || 0, 'px');
+
+		// 当前动画元素初始化位置
+		initLeft = this.removeUnit(animate.init.left || 0, 'px');
+		initTop = this.removeUnit(animate.init.top || 0, 'px');
+
+		x = left - initLeft + 'px';
+		y = top - initTop + 'px';
 		z = 0;
 
 		// 赋值给位置表单，以便程序自动收集
@@ -376,19 +436,43 @@ ia = {
 	// 2.为了兼容drag-dom组件的原因，不能直接删掉元素行内left top的位置信息，否则拖拽将无法正常工作
 	// 3.基于以上原因，初始化时，将位置信息更新为用户设定的初始化位置信息
 	resetAnimatePlace: function(data){
-		data = data || clover.current.animate();
-		tags.animateElements().css({top: data.place['0%'].top || 0, left: data.place['0%'].left || 0})
-	},
+		var top, left;
 
-	// 清空动画状态，解决因translate3d位移引起的动画元素定位不准确的问题
-	clearFadeIn: function(){
-		tags.animateElements().removeClass('fadeIn')
+		// 查询动画元素起始位置
+		if(data.place['0%']){
+			top = this.removeUnit(data.place['0%'].top || 0);
+			left = this.removeUnit(data.place['0%'].left || 0);
+		} else {
+			top = 0;
+			left = 0;
+		};
+
+		data = data || clover.current.animate();
+		$(clover.tag(data.guid)).css({top: top, left: left})
 	},
 
 	// 使得动画元素行内样式的left top值停留在动画结束的位置
 	goAnimateLast: function(data){
+		var top, left;
+
+		// 查询动画元素终点位置
+		if(data.place['100%']){
+			top = this.removeUnit(data.place['100%'].top || 0);
+			left = this.removeUnit(data.place['100%'].left || 0);
+		} else {
+			top = 0;
+			left = 0;
+		};
+
 		data = data || clover.current.animate();
-		clover.current.element().css({top: data.place['100%'].top || 0, left: data.place['100%'].left || 0})
+		$(clover.tag(data.guid)).css({top: top, left: left})
+	},
+
+	// 清空动画状态，解决因translate3d位移引起的动画元素定位不准确的问题
+	clearFadeIn: function(guid){
+		guid ?
+			$(clover.tag(guid)).removeClass('fadeIn'):
+			clover.current.element().removeClass('fadeIn');
 	},
 
 	// 格式化时间
@@ -396,8 +480,14 @@ ia = {
 		return time.match(/ms/) ? time.replace('ms', '') : Number(time.replace('s', ''))*1000
 	},
 
+	// 去掉单位
+	removeUnit: function(args, unit){
+		return typeof args === 'string' ?
+			Number(args.replace(unit, '')) : Number(args);
+	},
+
 	// 只切换帧，不保存上一帧状态
-	changeProcess: function(process){
+	changeProcess: function(process, data){
 		// 切换到下一帧
 		tags.processParent().find('[value="'+process+'"]')
 			.addClass('selected').siblings('.selected').removeClass('selected');
@@ -406,10 +496,10 @@ ia = {
 		ia.clearProcessInput();
 
 		// 重播记录的原始数据
-		ia.replayProcessInput();
+		ia.replayProcessInput(data);
 
 		// 回归动画元素当前帧位置信息
-		ia.replayProcessPlace();
+		ia.replayProcessPlace(data);
 
 		// 首次计算当前关键帧的位移信息
 		// 选中当前帧时即开始计算，有时候最后一帧是初始位置
@@ -418,9 +508,6 @@ ia = {
 
 	// 切换动画元素
 	changeElement: function(tag){
-		// 清空动画过程参数
-		ia.clearAnimateInput();
-
 		// 重播记录的原始数据
 		ia.replayAnimateInput();
 
@@ -457,6 +544,58 @@ ia = {
 		var img = new Image();
 		img.src = src;
 		img.onload = callback || function(){};
+	},
+
+	// 播放当前选中的动画
+	viewTheAnimate: function(data){
+		var time, guid;
+
+		// 获取当前动画数据
+		data = data || clover.current.animate();
+		guid = data.guid || clover.current.guid();
+
+		// 检查是否有动画参数
+		if($.isEmptyObject(data.base)) return;
+
+		// 检查当前元素是否处于动画状态
+		if(isAnimate[guid]) return;
+		isAnimate[guid] = true;
+
+		// 获取当前动画过程时间
+		time = ia.formatTime(data.base.time);
+
+		// 清空拖拽生成的位置信息，返回动画元素起点
+		ia.resetAnimatePlace(data);
+
+		// 设置动画状态停驻问题
+		clearTimeout(st[guid])
+		st[guid] = setTimeout(function(){
+
+			// 删除动画过程，避免动画过程对现有动画元素造成的影响
+			ia.clearFadeIn(guid);
+			// 使动画元素停驻在动画结束的位置
+			ia.goAnimateLast(data);
+			// 切换当前帧为最后一帧
+			// 修正因动画状态结束停驻的位置，对下一次数据保存操作造成的影响
+			ia.changeProcess('100%', data);
+
+			// 改变当前动画过程标识
+			// 增强程序可靠性
+			isAnimate[guid] = false;
+
+		}, time);
+
+		// 播放动画
+		ia.play(guid);
+	},
+
+	// 播放当前页所有动画
+	viewPageAnimate: function(){
+		tags.animateElements().removeClass('selected');
+
+		$.each(cache.inputValue, function(key, value){
+			ia.viewTheAnimate(value);
+		});
 	}
 
 };
@@ -471,7 +610,6 @@ clover.current = {
 
 	// 返回当前动画对象动画数据
 	animate: function(){
-		console.log(this.element())
 		return cache.inputValue[this.guid()]
 	},
 
@@ -530,53 +668,32 @@ clover.events = {
 		});
 	},
 
-	// 预览并保存当前选中动画
+	// 预览动画
 	viewAnimate: function(){
 		var st;
 
+		// 预览当前选中动画
 		tags.saveView().click(function(){
-			var data, time, guid;
+			var data = clover.current.animate();
 
-			guid = clover.current.guid();
+			// 检查是否有动画参数
+			if($.isEmptyObject(data.base)) return;
 
 			// 检查当前元素是否处于动画状态
-			if(isAnimate[guid]) return;
-			isAnimate[guid] = true;
+			if(isAnimate[data.guid]) return;
 
 			// 计算位移
 			ia.calcTranslate3d();
 			// 存储当前状态数据
 			clover.data.save();
-
-			// 获取当前动画数据
-			data = clover.current.animate();
-			// 获取当前动画过程时间
-			time = ia.formatTime(data.base.time);
-
-			// 清空拖拽生成的位置信息，返回动画元素起点
-			ia.resetAnimatePlace(data);
-
-			// 设置动画状态停驻问题
-			clearTimeout(st)
-			st = setTimeout(function(){
-
-				// 删除动画过程，避免动画过程对现有动画元素造成的影响
-				ia.clearFadeIn();
-				// 使动画元素停驻在动画结束的位置
-				ia.goAnimateLast(data);
-				// 切换当前帧为最后一帧
-				// 修正因动画状态结束停驻的位置，对下一次数据保存操作造成的影响
-				ia.changeProcess('100%');
-
-				// 改变当前动画过程标识
-				// 增强程序可靠性
-				isAnimate[guid] = false;
-
-			}, time);
-
 			// 播放动画
-			ia.play(guid);
-		})
+			ia.viewTheAnimate();
+		});
+
+		// 预览当前页所有动画
+		tags.viewPageAnimate().click(function(){
+			ia.viewPageAnimate();
+		});
 	},
 
 	// 清空当前元素动画
@@ -602,22 +719,24 @@ clover.events = {
 	// 动画元素
 	animateElements: function(){
 		$(document).delegate('.ap', 'click', function(){
-			// 存储当前状态数据
-			if(clover.current.guid()){
-				clover.data.save();
-			}
+
+			// 检查页面是否有动画正在进行，如果是则不允许切换
+			for(var i in isAnimate){
+				if(isAnimate[i])
+					return;
+			};
 
 			// 交互界面状态切换
-			this.classList.add('selected')
-			$(this).siblings('.selected').removeClass('selected')
-
-			// 获取当前动画对象
-			ia.getElementAnimate();
+			this.classList.add('selected');
+			$(this).siblings('.selected').removeClass('selected');
 
 			// 重播记录的原始数据
 			ia.replayAnimateInput();
 
-		})
+			if($.isEmptyObject(clover.current.animate().base)){
+				clover.data.saveBase();
+			};
+		});
 	},
 
 	// 参数输入控件事件绑定
@@ -653,28 +772,16 @@ clover.events = {
 			// 添加动画元素到画布
 			tags.canvas().append('<img guid="'+gid+'" src="'+url+'" class="ap selected">');
 			// 创建元素动画
-			ia.createElementAnimate(gid);
-			// 选定当前拖拽元素
-			ia.changeElement(tag);
-			// 检查动画对象是否存在
-			ia.getElementAnimate();
-			// 为动画对象存储初始化数据
-			clover.data.saveAll(gid);
-			// 绑定元素拖动事件
-			ia.drag(tag, url);
-			// 动画帧指向0%
-			ia.changeProcess('0%');
+			ia.createElementAnimate(gid, url);
 		});
 	},
 
 	initAnimate: function(){
-		if(!clover.current.guid()) return;
-
-		ia.drag('.ap[guid="'+clover.current.guid()+'"]');
-		// 检查动画对象是否存在
-		ia.getElementAnimate();
-		// 为动画对象存储初始化数据
-		clover.data.saveAll();
+		if(tags.animateElements().length){
+			tags.animateElements().each(function(){
+				ia.createElementAnimate(this.getAttribute('guid'))
+			});
+		}
 	},
 
 	test: function(){

@@ -16,19 +16,19 @@
 
 			<label class="effect-label" for="">
 				<strong class="u-title">动画时间</strong>
-				<input sign="time" class="animate-input" type="text" value="1s">
+				<input sign="time" class="animate-input" type="text" data-value="1s" value="1s">
 				<input name="time" type="range" min="0" max="100" value="10" algorithm="0.1" unit="s">
 			</label>
 
 			<label class="effect-label" for="">
 				<strong class="u-title">动画延迟时间</strong>
-				<input sign="delay" class="animate-input" type="text" value="0">
+				<input sign="delay" class="animate-input" type="text" data-value="0" value="0">
 				<input name="delay" type="range" min="0" max="100" value="0" algorithm="0.1" unit="s">
 			</label>
 
 			<label class="effect-label" for="">
 				<strong class="u-title">动画轨迹</strong>
-				<input sign="function" class="animate-input" type="text" value="ease">
+				<input sign="function" class="animate-input" type="text" data-value="ease" value="ease">
 			</label>
 			
 			
@@ -69,13 +69,15 @@
 
 	</div>
 	<div id="dragCanvas" class="content">
-		<!-- <img guid="354fa4c557aca01e0182d4s" class="ap" width="160" src="images/2.png"> -->
+		<img guid="d54fa4c557aca01e0182d4" class="ap selected" width="160" src="images/1.png">
+		<img guid="354fa4c557aca01e0182d4" class="ap" width="160" src="images/2.png" style="left: 300px; top: 300px;">
 	</div>
 	<div class="aside">
 		
 		<!-- <button class="btn" id="btnTest">获取数据</button> -->
 		<button class="btn" id="clearAnimate">清空当前动画</button>
 		<button class="btn" id="btnView">保存并预览当前动画</button>
+		<button class="btn" id="btnViewPage">预览当前页所有动画</button>
 		<button class="btn" id="newPage">新建页面</button>
 		<button class="btn" id="newFrame">新建动画过程</button>
 		<button class="btn" id="delFrame">删除动画过程</button>
