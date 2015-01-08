@@ -280,10 +280,10 @@ ia = {
 	replayAnimateInput: function(){
 		var data = cache.inputValue[clover.current.guid()];
 
-		if(!data.base || $.isEmptyObject(data.base)) return;
-
 		// 清空所有动画表单
 		this.clearAnimateInput();
+
+		if(!data.base || $.isEmptyObject(data.base)) return;
 
 		// 重播数据
 		$.each(data.base || {}, function(key, value){
@@ -562,7 +562,7 @@ ia = {
 		isAnimate[guid] = true;
 
 		// 获取当前动画过程时间
-		time = ia.formatTime(data.base.time);
+		time = ia.formatTime(data.base.time) + ia.formatTime(data.base.delay);
 
 		// 清空拖拽生成的位置信息，返回动画元素起点
 		ia.resetAnimatePlace(data);
@@ -591,7 +591,10 @@ ia = {
 
 	// 播放当前页所有动画
 	viewPageAnimate: function(){
+		// 删除当前选中元素选中态
 		tags.animateElements().removeClass('selected');
+		// 清空动画参数为默认值
+		ia.clearAnimateInput()
 
 		$.each(cache.inputValue, function(key, value){
 			ia.viewTheAnimate(value);
@@ -701,6 +704,9 @@ clover.events = {
 		tags.clearAnimate().click(function(){
 			var guid = clover.current.guid();
 
+			// 弹出确认对话框，防止误操作
+			if(!confirm('确定要清空当前选中动画吗？')) return;
+
 			// 删除fadeIn类
 			ia.clearFadeIn();
 			// 清空动画帧输入框数据
@@ -765,9 +771,11 @@ clover.events = {
 
 	// 拖拽动画元素到画布
 	dragInpage: function(){
-		dragInpage(document, function(url){
+		dragInpage(document, function(url, baseUrl){
 			var gid = createGuid();
 			var tag = '.ap[guid="'+gid+'"]';
+
+			console.log(baseUrl)
 
 			// 添加动画元素到画布
 			tags.canvas().append('<img guid="'+gid+'" src="'+url+'" class="ap selected">');

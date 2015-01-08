@@ -27,28 +27,33 @@ define(['zepto'], function($) {
 	return drag;
 
 	function openFiles(fileList, callback){
-		// console.log(fileList);
-		// console.log(fileList.length);
 		for(var i=0; i<fileList.length; i++){
 			readFiles(fileList[i], callback);
 		}
 	}
 
 	function readFiles(file, callback){
+		var imgUrl = window.webkitURL.createObjectURL(file),
+			filename = file.name,
+			filesize = Math.floor(file.size/1024);	
+				
 		var read = new FileReader();
+		read.readAsDataURL(file); 
+		read.onload = function(e){
+			var result = e.target.result;
+			callback(imgUrl, result)
+		}
+
 		if(file.length = 0){
 			return false;
 		}
-		var imgUrl = window.webkitURL.createObjectURL(file),
-			filename = file.name,
-			filesize = Math.floor(file.size/1024);
 
 		if(file.type.indexOf('image')== -1){
 			alert('您拖的不是图片！');
 			return false;
 		}
+		
 
-		callback(imgUrl);
 	};
 
 });

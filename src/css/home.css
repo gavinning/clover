@@ -25,7 +25,11 @@ input{
 }
 .ap{
 	position: absolute;
+	z-index: 10;
 	max-width: 200px;
+}
+.ap.selected{
+	z-index: 1000;
 }
 .page{
 	display: -webkit-box;
