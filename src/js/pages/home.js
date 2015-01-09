@@ -709,10 +709,10 @@ clover.events = {
 
 			// 删除fadeIn类
 			ia.clearFadeIn();
-			// 清空动画帧输入框数据
-			ia.clearProcessInput();
 			// 切换到第一帧
 			ia.changeProcess('0%');
+			// 清空动画数据
+			clover.ia.clearAnimateInput()
 			// 重建动画对象
 			ia.reBuildAnimate(guid);
 			// 初始化动画对象
@@ -774,8 +774,6 @@ clover.events = {
 		dragInpage(document, function(url, baseUrl){
 			var gid = createGuid();
 			var tag = '.ap[guid="'+gid+'"]';
-
-			console.log(baseUrl)
 
 			// 添加动画元素到画布
 			tags.canvas().append('<img guid="'+gid+'" src="'+url+'" class="ap selected">');
