@@ -634,6 +634,10 @@ clover.current = {
 // 页面事件，所有事件将会在页面初始化之后绑定
 clover.events = {
 
+	init: function(){
+		$('.page').height(window.innerHeight)
+	},
+
 	// 动画过程交互
 	// 点击切换帧时的交互逻辑
 	animateProcess: function(){
