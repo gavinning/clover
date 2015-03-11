@@ -132,6 +132,10 @@ Parser = function(){
 			*/
 		},
 
+		compile2: function(data){
+			console.log(data, 123)
+		},
+
 		// 格式化普通样式
 		parseStyle: function(key, value) {
 			return value ?
@@ -151,7 +155,7 @@ Parser = function(){
 		}
 
 
-	})
+	});
 
 	return this;
 }

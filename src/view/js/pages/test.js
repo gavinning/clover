@@ -1,19 +1,13 @@
-define(['zepto', 'page', 'cache', 'dragDom'], function($, Page, Cache, dragDom){
-	var cache = new Cache;
+define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Page, Cache, dragDom, Listen, Parser){
 	var page = new Page;
+	var cache = new Cache;
+	var listen = new Listen;
+	var parser = new Parser;
 	var app = page.app;
 
 	// onload方法外定义模块位置可随意
 	// onload方法内定义模块需要位置提前，以保证程式执行顺序
 	page.onload(function(){
-
-		// 动画数据类
-		function AnimateData() {
-			return {
-				base: {},
-				frames: {}
-			}
-		};
 
 		// 当前环境变量模块
 		this.exports('current', {
@@ -40,24 +34,24 @@ define(['zepto', 'page', 'cache', 'dragDom'], function($, Page, Cache, dragDom){
 
 		// Form data 模块
 		this.exports('form', {
+			// 获取动画数据
+			getData: function(guid){
+				typeof cache.inputValue[guid] === 'object' ? '' :
+					cache.inputValue[guid] = {};
+				return cache.inputValue[guid];
+			},
+
+			// 保存表单数据
 			save: function(data){
-				data = new AnimateData;
+				data = this.getData(app.current.guid());
 				$('input[sign]').each(function(){
 					data[this.getAttribute('sign')] = this.value;
 				});
 				$.extend(cache.inputValue[app.current.guid()], data);
 			},
 
-			saveBase: function(data){
-				data = new AnimateData;
-				$('.animate-args').find('input[sign]').each(function(){
-					data.base[this.getAttribute('sign')] = this.value;
-				});
-				$.extend(cache.inputValue[app.current.guid()], data);
-			},
-
 			reset: function(){
-				$.each(cache.inputValue[app.current.guid()], function(key, value){
+				$.each(this.getData(app.current.guid()), function(key, value){
 					$('input[sign="'+ key +'"]').val(value)
 				})
 			}
@@ -98,24 +92,33 @@ define(['zepto', 'page', 'cache', 'dragDom'], function($, Page, Cache, dragDom){
 			}
 		});
 
-		// 动画编译模块
-		this.exports('parser', {
-			compile: function(){
-
-			}
-		});
+		// // 动画编译模块
+		// this.exports('parser', {
+		// 	compile: function(data){
+		// 		return parser.compile2(data)
+		// 	}
+		// });
 
 		// 动画操作模块
-		this.exports('animate', {
-			bind: function(){
-				$('#btnView').on('click', function(){
-					app.form.save();
-					this.play();
-				})
-			},
+		this.exports('animate', function(){
 
-			play: function(){
-				
+			$('#btnView').on('click', function(){
+				listen.fire('save');
+				listen.fire('play');
+				console.log('save and play')
+			});
+
+			return {
+				bind: function(){
+					$('#btnView').on('click', function(){
+						app.form.save();
+						this.play();
+					})
+				},
+
+				play: function(){
+					
+				}
 			}
 		});
 
@@ -134,9 +137,8 @@ define(['zepto', 'page', 'cache', 'dragDom'], function($, Page, Cache, dragDom){
 			init: function(){
 				app.dragDom.bind('.ap.selected');
 
-				app.form.saveBase();
+				app.form.save();
 
-				console.log(cache.inputValue)
 			},
 
 			bind: function(){
@@ -148,6 +150,17 @@ define(['zepto', 'page', 'cache', 'dragDom'], function($, Page, Cache, dragDom){
 			}
 		});
 
+		// 保存动画数据
+		listen.on('save', function(){
+			app.form.save();
+			cache.animate[app.current.guid()] = parser.compile2(app.current.animate());
+			console.log('form data save')
+		});
+
+		// 预览动画
+		listen.on('play', function(){
+			// 
+		});
 
 
 	});

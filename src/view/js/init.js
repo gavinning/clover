@@ -9,6 +9,7 @@ require.config({
 		pm 			: 'mods/pm',
 		page 		: 'mods/page',
 		cache 		: 'mods/cache',
+		listen 		: 'mods/listen',
 		clover 		: 'pages/home',
 		test		: 'pages/test'
 	},
