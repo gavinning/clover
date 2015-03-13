@@ -46,7 +46,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 
 			// 返回当前动画对象
 			element: function(){
-				return this.canvas().find('.selected')
+				return this.canvas().find(_selected)
 			},
 
 			// 返回当前动画对象guid
@@ -61,7 +61,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 
 			// 返回当前关键帧
 			process: function(){
-				return $('.animate-process').find('.selected').attr('value');
+				return $('.animate-process').find(_selected).attr('value');
 			}
 		});
 
@@ -176,6 +176,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 		// 动画操作模块
 		// 包括直接或间接针对动画对象的操作
 		this.exports('animate', function(){
+			var animateProcess = $('.animate-process');
 
 			// 监听动画元素click事件
 			app.current.canvas().delegate('.ap', 'click', function(){
@@ -185,13 +186,16 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 
 				// 检查是否已存在动画对象
 				// 检查动画对象是否更新
-				// 条件为真 重播当前动画对象数据
 				if(cache.inputValue[this.guid] && this.guid !== this.prev.guid){
+					// 条件为真
+					// 重播当前动画对象数据
 					app.form.replay(this.guid);
+					// 切换到第一关键帧，防止数据重播失败
+					animateProcess.find('.btn[value="0%"]').addClass(selected).siblings(_selected).removeClass(selected);
 				};
 
 				// 更新当前动画对象状态
-				$(this).addClass('selected').siblings('.selected').removeClass('selected');
+				$(this).addClass(selected).siblings(_selected).removeClass(selected);
 			});
 
 			// 保存并预览
@@ -201,7 +205,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 			});
 
 			// 切换关键帧
-			$('.animate-process').delegate('.btn', 'click', function(){
+			animateProcess.delegate('.btn', 'click', function(){
 				var guid = app.current.guid();
 
 				// 发布数据保存事件
@@ -213,7 +217,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				};
 
 				// 更新当前动画关键帧状态
-				$(this).addClass('selected').siblings('.selected').removeClass('selected');
+				$(this).addClass(selected).siblings(_selected).removeClass(selected);
 			});
 
 			return {
@@ -234,7 +238,6 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				// 渲染animate style
 				render: function(data){
 					var style = $('style[data-id="clover"]');
-
 					style.length === 0 ? style = this.createCloverStyle() : '';
 					style.html(data);
 					$('head').append(style);
@@ -244,14 +247,16 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 					var css;
 					guid = guid || app.current.guid();
 					css = parser.render(cache.inputValue);
+					// 渲染css
 					this.render(css);
+					// 执行动画
 					this.element(guid).removeClass('fadeIn').reflow().addClass('fadeIn');
 				}
 			}
 		});
 
-		// 动画元素属性模块
-		this.exports('attr', {
+		// 时间轴
+		this.exports('timeline', {
 
 		});
 
