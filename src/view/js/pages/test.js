@@ -34,8 +34,18 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 		listen.on('play', function(){
 			// 播放动画
 			app.animate.play();
+			console.log('animate play')
 		});
 
+
+		// 公共方法模块定义
+		this.exports('base', {
+
+			// 用于item切换
+			slideItem: function(obj){
+				$(obj).addClass(selected).siblings(_selected).removeClass(selected);
+			}
+		});
 
 		// 当前环境变量模块
 		this.exports('current', {
@@ -66,75 +76,110 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 		});
 
 		// Form data 模块
-		this.exports('form', {
-			// 获取动画数据
-			getData: function(guid){
-				var guid = guid || app.current.guid();
-				var dataModel = {
-					init: {},
-					base: {},
-					frames: {},
-					guid: guid
-				};
-				typeof cache.inputValue[guid] === 'object' ? '' : cache.inputValue[guid] = dataModel;
-				return cache.inputValue[guid];
-			},
+		// 动画数据模型创建
+		this.exports('form', function(){
 
-			// 保存表单数据
-			save: function(data){
-				this.saveBase();
-				this.saveFrames();
-			},
+			// 动画轨迹事件处理
+			$('#slideOptions').delegate('i', 'click', function(){
 
-			// 保存基础数据
-			saveBase: function(data){
-				data = this.getData(app.current.guid());
-				// 获取动画基础数据
-				$('.animate-args').find('input[sign]').each(function(){
-					data.base[this.getAttribute('sign')] = this.value;
-				});
-				// 扩展动画基础数据
-				$.extend(data.base, {
-					className: '.fadeIn[guid="'+ data.guid +'"]',
-					name: 'Clover-' + data.guid,
-					count: 1,
-					mode: 'forwards'
-				});
-				// 合并到动画大数据
-				$.extend(cache.inputValue[app.current.guid()], data);
-			},
+				if($(this).hasClass(selected)) return;
 
-			// 保存关键帧数据
-			saveFrames: function(data, process){
-				data = this.getData(app.current.guid());
-				process = app.current.process();
-				data.frames[process] ? '' : data.frames[process] = {};
-				$('.animate-effect').find('input[sign]').each(function(){
-					data.frames[process][this.getAttribute('sign')] = this.value;
-				});
-				$.extend(cache.inputValue[app.current.guid()], data);
-			},
+				// 更新item状态
+				app.base.slideItem(this);
+				// 同步更新隐藏表单值
+				$(this).parent().siblings('[sign="function"]').val(this.innerText);
 
-			// 重播动画基础数据
-			replayBase: function(guid){
-				guid = guid || app.current.guid();
-				$.each(cache.inputValue[guid].base, function(key, value){
-					$('.animate-args').find('input[sign="'+ key +'"]').val(value)
-				})
-			},
+				// 保存并预览
+				listen.fire('save');
+				listen.fire('play');
+			});
 
-			// 重播动画帧数据
-			replayProcess: function(guid, process){
-				guid = guid || app.current.guid();
-				process = process || '0%';
-				$.each(cache.inputValue[guid].frames[process], function(key, value){
-					$('.animate-effect').find('input[sign="'+ key +'"]').val(value)
-				})
-			},
+			// 处理range控件
+			$('.effect-label').delegate('input[type="range"]', 'input', function(){
+				var value, algorithm, unit;
 
-			replay: function(guid){
-				this.replayBase(guid);
-				this.replayProcess(guid);
+				// 获取倍数
+				algorithm = this.getAttribute('algorithm') || 1;
+				// 获取单位
+				unit = this.getAttribute('unit') || '';
+				// 获取最终结果
+				value = (this.value * algorithm).toString().slice(0, 4) + unit;
+
+				$(this).prev('input[type="text"]').val(value)
+			});
+
+			return {
+				// 获取动画数据
+				// 动画数据模型创建
+				getData: function(guid){
+					var guid = guid || app.current.guid();
+					var dataModel = {
+						init: {},
+						base: {},
+						frames: {},
+						place: {},
+						guid: guid
+					};
+					typeof cache.inputValue[guid] === 'object' ? '' : cache.inputValue[guid] = dataModel;
+					return cache.inputValue[guid];
+				},
+
+				// 保存表单数据
+				save: function(data){
+					this.saveBase();
+					this.saveFrames();
+				},
+
+				// 保存基础数据
+				saveBase: function(data){
+					data = this.getData(app.current.guid());
+					// 获取动画基础数据
+					$('.animate-args').find('input[sign]').each(function(){
+						data.base[this.getAttribute('sign')] = this.value;
+					});
+					// 扩展动画基础数据
+					$.extend(data.base, {
+						className: '.fadeIn[guid="'+ data.guid +'"]',
+						name: 'Clover-' + data.guid,
+						count: 1,
+						mode: 'forwards'
+					});
+					// 合并到动画大数据
+					$.extend(cache.inputValue[app.current.guid()], data);
+				},
+
+				// 保存关键帧数据
+				saveFrames: function(data, process){
+					data = this.getData(app.current.guid());
+					process = app.current.process();
+					data.frames[process] ? '' : data.frames[process] = {};
+					$('.animate-effect').find('input[sign]').each(function(){
+						data.frames[process][this.getAttribute('sign')] = this.value;
+					});
+					$.extend(cache.inputValue[app.current.guid()], data);
+				},
+
+				// 重播动画基础数据
+				replayBase: function(guid){
+					guid = guid || app.current.guid();
+					$.each(cache.inputValue[guid].base, function(key, value){
+						$('.animate-args').find('input[sign="'+ key +'"]').val(value)
+					})
+				},
+
+				// 重播动画帧数据
+				replayProcess: function(guid, process){
+					guid = guid || app.current.guid();
+					process = process || '0%';
+					$.each(cache.inputValue[guid].frames[process], function(key, value){
+						$('.animate-effect').find('input[sign="'+ key +'"]').val(value)
+					})
+				},
+
+				replay: function(guid){
+					this.replayBase(guid);
+					this.replayProcess(guid);
+				}
 			}
 		});
 
