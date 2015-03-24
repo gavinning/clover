@@ -19,6 +19,17 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 
 	var selected = 'selected';
 	var _selected = '.selected';
+	var isAnimating = false;
+
+
+	String.prototype.toNumber = function(){
+		return Number(this.replace('px', ''))
+	};
+
+	Number.prototype.toNumber = function(){
+		return this
+	};
+
 
 	// onload方法外定义模块位置可随意
 	// onload方法内定义模块需要位置提前，以保证程式执行顺序
@@ -26,13 +37,20 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 
 		// 订阅Form-data保存
 		listen.on('save', function(){
+			// 检查动画状态，如果正处于动画过程，则不再响应新的保存请求
+			if(isAnimating) return;
+
 			app.form.save();
 			console.log('form data save')
 		});
 
 		// 订阅动画播放
 		listen.on('play', function(){
-			// 播放动画
+			// 检查动画状态，如果正处于动画过程，则不再响应新的预览请求
+			if(isAnimating) return;
+			isAnimating = true;
+
+			// 开始播放动画
 			app.animate.play();
 			console.log('animate play')
 		});
@@ -81,9 +99,6 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 
 			// 动画轨迹事件处理
 			$('#slideOptions').delegate('i', 'click', function(){
-
-				if($(this).hasClass(selected)) return;
-
 				// 更新item状态
 				app.base.slideItem(this);
 				// 同步更新隐藏表单值
@@ -128,6 +143,8 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				save: function(data){
 					this.saveBase();
 					this.saveFrames();
+
+					this.savePlace();
 				},
 
 				// 保存基础数据
@@ -142,10 +159,11 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 						className: '.fadeIn[guid="'+ data.guid +'"]',
 						name: 'Clover-' + data.guid,
 						count: 1,
-						mode: 'forwards'
+						mode: 'forwards' // backwards || forwards || both
+						// 当mode的值为forwards时，动画结束时需要删除动画类fadeIn，并初始化0%的绝对位置，以达到重置动画位置的目的（推荐）
+						// 当mode的值为backwards时，动画结束时，只需要初始化0%的绝对位置即可达到重置动画位置的目的
+						// in the app.animate form module animate
 					});
-					// 合并到动画大数据
-					$.extend(cache.inputValue[app.current.guid()], data);
 				},
 
 				// 保存关键帧数据
@@ -156,7 +174,40 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 					$('.animate-effect').find('input[sign]').each(function(){
 						data.frames[process][this.getAttribute('sign')] = this.value;
 					});
-					$.extend(cache.inputValue[app.current.guid()], data);
+				},
+
+				// 保存位置信息
+				savePlace: function(data){
+					data = this.getData(app.current.guid());
+					process = app.current.process();
+					data.place[process] ? '' : data.place[process] = {};
+
+					data.place[process].left = app.current.element().css('left');
+					data.place[process].top = app.current.element().css('top');
+
+					this.calcPlace(data);
+				},
+
+				calcPlace: function(data){
+					var width, height, data;
+					data = data || this.getData(app.current.guid());
+					if(!$.isEmptyObject(data.place['0%'])){
+						width = app.current.element().width();
+						height = app.current.element().height();
+						// 计算当前位移
+						$.each(data.place, function(key, value){
+							var left = value.left.toNumber();
+							var top = value.top.toNumber();
+							var x = left/width*100;
+							var y = top/height*100;
+							var z = 0;
+
+							x == 0 ? '' : x += '%';
+							y == 0 ? '' : y += '%';
+
+							data.frames[key].translate3d = x + ',' + y + ',' + z;
+						});
+					}
 				},
 
 				// 重播动画基础数据
@@ -174,6 +225,14 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 					$.each(cache.inputValue[guid].frames[process], function(key, value){
 						$('.animate-effect').find('input[sign="'+ key +'"]').val(value)
 					})
+				},
+
+				// 重播动画位置
+				replayPlace: function(guid, process){
+					var data = this.getData(app.current.guid());
+					var guid = guid || app.current.guid();
+					var process = process || '0%';
+					app.current.element().css({left: data.place[process].left, top: data.place[process].top})
 				},
 
 				replay: function(guid){
@@ -240,11 +299,11 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				};
 
 				// 更新当前动画对象状态
-				$(this).addClass(selected).siblings(_selected).removeClass(selected);
+				app.base.slideItem(this);
 			});
 
 			// 保存并预览
-			$('#btnView').on('click', function(){
+			$('#btnPlay').on('click', function(){
 				listen.fire('save');
 				listen.fire('play');
 			});
@@ -259,15 +318,46 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				// 重播当前帧数据
 				if(cache.inputValue[guid] && cache.inputValue[guid].frames[this.value]){
 					app.form.replayProcess(guid, this.value);
+					app.form.replayPlace(guid, this.value);
 				};
 
 				// 更新当前动画关键帧状态
-				$(this).addClass(selected).siblings(_selected).removeClass(selected);
+				app.base.slideItem(this);
 			});
 
-			return {
-				bind: function(){
+			// 动画播放完成动作
+			app.current.element().get(0).addEventListener('webkitAnimationEnd', function(){
+				var self = this;
 
+				// 注销入场动画
+				setTimeout(function(){
+					// 清理动画类
+					$(self).removeClass('fadeIn');
+					// 更新动画停驻位置为100%
+					app.animate.toProcess('100%');
+
+					// 重置动画状态
+					isAnimating = false;
+				}, 200)
+				// app.animate.initPlace();
+			}, false);
+
+			return {
+				// 动画绝对定位位置清零
+				clearPlace: function(){
+					app.current.element().css({left: 0, top: 0})
+				},
+
+				// 初始化动画绝对定位位置
+				initPlace: function(){
+					var data = app.current.animate();
+					app.current.element().css({left: data.place['0%'].left, top: data.place['0%'].top})
+				},
+
+				// 跳转到指定帧
+				toProcess: function(process){
+					process = process || '0%';
+					animateProcess.find('.btn[value="'+process+'"]').click();
 				},
 
 				// 返回指定guid动画对象
@@ -288,7 +378,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 					$('head').append(style);
 				},
 
-				play: function(guid){
+				playAnimate: function(guid){
 					var css;
 					guid = guid || app.current.guid();
 					css = parser.render(cache.inputValue);
@@ -296,6 +386,15 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 					this.render(css);
 					// 执行动画
 					this.element(guid).removeClass('fadeIn').reflow().addClass('fadeIn');
+				},
+
+				play: function(){
+					// 回归第一帧，回归0%位置，为动画开始做准备
+					this.toProcess();
+					// 清理动画元素绝对定位产生的位置信息，为动画开始做准备
+					this.clearPlace();
+					// 开始播放动画
+					this.playAnimate();
 				}
 			}
 		});
@@ -317,7 +416,9 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 			},
 
 			bind: function(){
-
+				window.onresize = function(){
+					app.dragDom.on('.ap.selected');
+				}
 			},
 
 			render: function(){

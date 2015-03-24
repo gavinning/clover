@@ -10,7 +10,14 @@
 <div class="clover-page">
 
 	<header class="clover-header">
-		<div class="clover-logo">LincoApp-clover-logo</div>
+		<div class="clover-logo"></div>
+		<div class="header-control">
+			
+			<button id="btnSave" class="btn btn-save"></button>
+			<button id="btnPlay" class="btn btn-play"></button>
+			<button id="btnAdd" class="btn btn-add dn"></button>
+		</div>
+		<div class="header-aside"></div>
 	</header>
 	<div class="clover-content">
 		<div class="clover-aside instance-left">
@@ -73,16 +80,10 @@
 		</div>
 		<div class="clover-aside instance-right">
 			
-			<!-- <button class="btn" id="btnTest">获取数据</button> -->
-			<button class="btn" id="clearAnimate">清空当前动画</button>
-			<button class="btn" id="btnView">保存并预览当前动画</button>
-			<button class="btn" id="btnViewPage">预览当前页所有动画</button>
-			<button class="btn" id="newFrame">新建动画过程</button>
-			<button class="btn" id="delFrame">删除动画过程</button>
-
 			<div class="animate-process">
 				<button class="btn first selected" value="0%">0%</button>
 				<!-- <input class="btn" type="text" value="50%"> -->
+				<button class="btn last" value="60%">60%</button>
 				<button class="btn last" value="100%">100%</button>
 			</div>
 		</div>
@@ -102,6 +103,8 @@
 			location.reload();
 		}
 	});
+
+	// font-family: Gurmukhi MN
 </script>
 </body>
 </html>
