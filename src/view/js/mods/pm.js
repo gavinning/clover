@@ -1,4 +1,4 @@
-define(['test'], function(home){
+define(['home'], function(home){
 
 	var pm = {
 

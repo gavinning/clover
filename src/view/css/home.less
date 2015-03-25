@@ -121,6 +121,18 @@ body{
 	}
 }
 
+.clover-drag-area{
+	position: relative;
+	-webkit-box-flex: 1;
+}
+
+.clover-timeline{
+	width: 20px;
+	height: inherit;
+	background: #ccc;
+}
+
+
 .clover-page{
 
 	input{
@@ -148,9 +160,12 @@ body{
 		}
 	}
 
-	.drag-area{
-		position: relative;
-		-webkit-box-flex: 1;
+	input.gray{
+		background: #efefef;
+
+		&:focus{
+			background: #fff;
+		}
 	}
 
 	.btn, .animate-process .input{

@@ -10,8 +10,7 @@ require.config({
 		page 		: 'mods/page',
 		cache 		: 'mods/cache',
 		listen 		: 'mods/listen',
-		clover 		: 'pages/home',
-		test		: 'pages/test'
+		home		: 'pages/home'
 	},
 	shim:{
 		'zepto': { 
