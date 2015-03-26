@@ -34,24 +34,24 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 	// onload方法内定义模块需要位置提前，以保证程式执行顺序
 	page.onload(function(){
 
-		// 订阅Form-data保存
+		// 订阅Form-data保存事件
 		listen.on('save', function(){
 			// 检查动画状态，如果正处于动画过程，则不再响应新的保存请求
 			if(isAnimating) return;
 
+			// 保存动画表单数据
 			app.form.save();
-			console.log('form data save')
 		});
 
-		// 订阅动画播放
+		// 订阅动画播放事件
 		listen.on('play', function(){
 			// 检查动画状态，如果正处于动画过程，则不再响应新的预览请求
 			if(isAnimating) return;
+			// 更新动画播放状态
 			isAnimating = true;
 
 			// 开始播放动画
 			app.animate.play();
-			console.log('animate play')
 		});
 
 
@@ -96,16 +96,18 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 				return app.timeline.current().attr('data-id');
 			},
 
+			// 返回第一帧 0%
 			firstProcess: function(){
 				return app.timeline.first().attr('data-id');
 			},
 
+			// 返回最后一帧 100%
 			lastProcess: function(){
 				return app.timeline.last().attr('data-id');
 			}
 		});
 
-		// Form data 模块
+		// Form-data 模块
 		// 动画数据模型创建
 		this.exports('form', function(){
 
@@ -113,7 +115,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 			$('#slideOptions').delegate('i', 'click', function(){
 				// 更新item状态
 				app.base.slideItem(this);
-				// 同步更新隐藏表单值
+				// 同步更新隐藏表单值，以便数据保存
 				$(this).parent().siblings('[sign="function"]').val(this.innerText);
 
 				// 保存并预览
@@ -122,6 +124,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 			});
 
 			// 处理range控件
+			// 同步更新表单的值
 			$('.effect-label').delegate('input[type="range"]', 'input', function(){
 				var value, algorithm, unit;
 
@@ -182,14 +185,15 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 					var data, process;
 
 					data = this.getData(app.current.guid());
-					// 保存上一关键帧信息
 					process = app.current.process();
+					// 检查关键帧对象是否存在
 					data.frames[process] ? '' : data.frames[process] = {};
+					// 保存关键帧数据
 					$('.animate-effect').find('input[sign]').each(function(){
 						data.frames[process][this.getAttribute('sign')] = this.value;
 					});
-					// 保存关键帧的值
-					data.frames[process].value = app.current.keyframeValue(process);
+					// 保存关键帧在时间轴上的位置值 0% ~ 100%
+					data.frames[process].value = app.current.keyframeValue();
 				},
 
 				// 保存位置信息
@@ -197,16 +201,17 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 					var data, process;
 
 					data = this.getData(app.current.guid());
-					// 保存上一关键帧位置
 					process = app.current.process();
 					data.place[process] ? '' : data.place[process] = {};
-
+					// 保存关键帧位置信息到place对象
 					data.place[process].left = app.current.element().css('left');
 					data.place[process].top = app.current.element().css('top');
 
+					// 计算相对位移
 					this.calcPlace(data);
 				},
 
+				// todo:待完善
 				// 计算相对位移
 				calcPlace: function(data){
 					var width, height;
@@ -253,10 +258,10 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 					app.current.element().css({left: data.place[process].left, top: data.place[process].top})
 				},
 
-				replay: function(guid){
-					// this.replayBase(guid);
-					// this.replayProcess(guid);
-					console.log('this function is droped')
+				// 重播动画数据
+				replay: function(guid, process){
+					this.replayProcess(guid, process);
+					this.replayPlace(guid, process);
 				}
 			}
 		});
@@ -321,19 +326,13 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 					// 重置动画状态
 					isAnimating = false;
 				}, 200)
-				// app.animate.initPlace();
+
 			}, false);
 
 			return {
 				// 动画绝对定位位置清零
 				clearPlace: function(){
 					app.current.element().css({left: 0, top: 0})
-				},
-
-				// 初始化动画绝对定位位置
-				initPlace: function(){
-					var data = app.current.animate();
-					app.current.element().css({left: data.place['0%'].left, top: data.place['0%'].top})
 				},
 
 				// 跳转到指定帧
@@ -355,6 +354,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 				// 渲染animate style
 				render: function(data){
 					var style = $('style[data-id="clover"]');
+					// 检查是否已存在clover style，不存在则创建
 					style.length === 0 ? style = this.createCloverStyle() : '';
 					style.html(data);
 					$('head').append(style);
@@ -363,6 +363,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 				playAnimate: function(guid){
 					var css;
 					guid = guid || app.current.guid();
+					// 编译动画规则
 					css = parser.render(cache.inputValue);
 					// 渲染css
 					this.render(css);
@@ -390,11 +391,10 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 			// 初始化时间轴事件
 			timeline.events.init(timeline);
 
-
 			//监听当前拖动的关键帧，返回更改后的结果
-			$(document).bind("keyMove", function (event, data) {
-				// console.log(data);
-			});
+			// $(document).bind("keyMove", function (event, data) {
+			// 	// console.log(data);
+			// });
 
 			$(document).on('keyChange', function(e, data){
 				var guid = app.current.guid();
@@ -404,11 +404,11 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 
 				// 重播当前帧数据
 				if(cache.inputValue[guid] && cache.inputValue[guid].frames[data.current]){
-					app.form.replayProcess(guid, data.current);
-					app.form.replayPlace(guid, data.current);
+					app.form.replay(guid, data.current);
 				};
 			});
 
+			// 返回时间轴实例
 			return timeline;
 		});
 
@@ -419,6 +419,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 	page.onload(function(){
 
 		this.extend({
+			// 页面初始化
 			init: function(){
 				// 初始化动画元素拖拽
 				app.dragDom.on('.ap.selected');
@@ -426,23 +427,24 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 				app.current.canvas().height($('.clover-content').height());
 			},
 
+			// 执行全局事件监听
 			bind: function(){
 				window.onresize = function(){
 					page.init();
 				}
 			},
 
+			// 执行页面渲染
 			render: function(){
 
 			}
 		});
 
-
 	});
 
 
 	page.reg();
-
+	// For test
 	page.cache = cache;
 	window.page = page;
 });

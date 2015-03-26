@@ -108,12 +108,17 @@ define(['zepto', 'guid', 'listen'], function($, guid) {
 
 		//新建关键帧
 		create: function(e){
+			console.log(e)
+			var gid = guid();
 			var axisAnimation = $('#' +this.defaultConfig.axisAnimation),
 				left = Math.round((e.clientX - axisAnimation[0].offsetLeft)/axisAnimation[0].offsetWidth * 100);
-			var left = e.clientX - e.currentTarget.offsetLeft;
+			// var left = e.clientX - e.currentTarget.offsetLeft;
+			// 数遍双击坐标
+			var left = e.layerX - e.currentTarget.offsetLeft;
+			console.log(e.clientX ,e.currentTarget.offsetLeft)
 			var percent = Math.round((left/axisAnimation[0].offsetWidth) * 100);
 			var index = axisAnimation.find('.axis-handle').length + 1;
-			var str = '<span class="axis-handle" style="left:' +left+ 'px" data-left="' +left+ '" data-id="'+guid()+'" data-drag="0" data-value="'+percent+'%"><em class="percent">'+percent+'%</em></span>';
+			var str = '<span class="axis-handle" style="left:' +left+ 'px" data-left="' +left+ '" data-id="'+gid+'" data-drag="0" data-value="'+percent+'%"><em class="percent">'+percent+'%</em></span>';
 			axisAnimation.append(str);
 
 			this.allKeyframe.push({
@@ -121,13 +126,9 @@ define(['zepto', 'guid', 'listen'], function($, guid) {
 				left: left,
 				drag: 0
 			});
-		},
 
-		//当前选中的关键帧
-		currentKey: function(e){
-			var axisAnimation = $('#' +this.defaultConfig.axisAnimation),
-				percent = $(e.currentTarget).attr(''), id = $(e.currentTarget).attr('data-id');
-			$(e.currentTarget).addClass(selected).siblings().removeClass(selected);
+			// 选中新创建的关键帧
+			this.ui.element.find('[data-id="'+gid+'"]').click();
 		},
 
 		drag: function(callback){//拖动关键帧
