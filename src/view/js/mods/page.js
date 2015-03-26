@@ -48,7 +48,7 @@ define(['zepto'], function($){
 
 			// 插件入口
 			exports: function(id, fn){
-				$.type(fn) === 'function' ? this.app[id] = fn() : this.app[id] = fn;
+				$.type(fn) === 'function' ? this.app[id] = fn.call({extend: this.extend}) : this.app[id] = fn;
 			}
 		});
 

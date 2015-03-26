@@ -1,0 +1,41 @@
+.axis-wrapper .axis-animation{
+	position: relative;
+	height:10px;
+	margin:0 auto;
+	background:#ccc;
+	-webkit-box-shadow:0 0 2px #d5d5d5;
+}
+.axis-handle,.axis-handle-first,.axis-handle-last{
+	position: absolute;top:-5px;
+	display: inline-block;
+	width:20px;height:20px;background:#66d5fa;
+	border:2px solid #66d5fa;
+	-webkit-box-sizing:border-box;
+}
+.axis-handle-first,.axis-handle-last{
+	background:#c0c0c0;
+	border:2px solid #c0c0c0;
+}
+.axis-handle em,.axis-handle-first em,.axis-handle-last em{
+	position: absolute;
+	color:#00ABFF;
+}
+.axis-handle-first em{
+	top:-20px;
+	left:0;
+}
+.axis-handle-last em{
+	top:-20px;	
+	right: 0;
+}
+.axis-handle em{
+	bottom:-20px;
+	left:0;	
+}
+.axis-handle.selected{
+	border:2px solid #00ABFF;
+}
+.axis-handle.selected, .axis-handle-first.selected, .axis-handle-last.selected{
+	background: #c00;
+	border-color: #c00;
+}

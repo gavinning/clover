@@ -46,18 +46,19 @@ define(function(){
 		};
 
 		this.fire = function(id){
-			var arr, name, status;
+			var arr, name, status, args;
 
 			arr = id.split('.');
 			name = arr[0];
 			status = arr[1] || defaultStatus;
+			args = [].slice.call(arguments, 1);
 
 			// 检查是否有订阅者
 			if(!map[name]) return;
 
 			// 执行消息分发
 			map[name].events[status].forEach(function(item){
-				item()
+				item.apply(null, args);
 			});
 			// 更新订阅状态
 			map[name].status = status;

@@ -85,12 +85,15 @@ Parser = function(){
 			res.init = data.init;
 
 			// 编译frames对象里的动画过程
-			$.each(data.frames, function(process, css){
+			$.each(data.frames, function(processId, css){
 				var arr = [];
 				var transform = [];
+				var process = css.value;
 
 				// 编译动画过程
 				$.each(css, function(key, value){
+					// 跳过不需要处理的属性
+					if(key === 'value') return;
 
 					// 检查transform属性
 					if(cssFunction.indexOf(key) >= 0){
@@ -130,10 +133,6 @@ Parser = function(){
 				}
 
 			*/
-		},
-
-		compile2: function(data){
-			console.log(data, 123)
 		},
 
 		// 格式化普通样式

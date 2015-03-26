@@ -3,6 +3,7 @@ require.config({
 	paths : {
 		zepto 		: 'libs/zepto.min',
 		dragDom 	: 'libs/dom-drag',
+
 		dragInpage 	: 'mods/drag',
 		guid 		: 'mods/guid',
 		parser 		: 'mods/parser',
@@ -10,6 +11,8 @@ require.config({
 		page 		: 'mods/page',
 		cache 		: 'mods/cache',
 		listen 		: 'mods/listen',
+		timeline	: 'mods/axisAnimation',
+
 		home		: 'pages/home'
 	},
 	shim:{

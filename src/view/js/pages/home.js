@@ -10,7 +10,7 @@
 
  */
 
-define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Page, Cache, dragDom, Listen, Parser){
+define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], function($, Page, Cache, dragDom, Listen, Parser, Timeline){
 	var page = new Page;
 	var cache = new Cache;
 	var listen = new Listen;
@@ -29,7 +29,6 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 	Number.prototype.toNumber = function(){
 		return this
 	};
-
 
 	// onload方法外定义模块位置可随意
 	// onload方法内定义模块需要位置提前，以保证程式执行顺序
@@ -74,7 +73,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 
 			// 返回当前动画对象
 			element: function(){
-				return this.canvas().find(_selected)
+				return this.canvas().find('.ap.selected')
 			},
 
 			// 返回当前动画对象guid
@@ -87,9 +86,22 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				return cache.inputValue[this.guid()]
 			},
 
-			// 返回当前关键帧
+			// 返回当前关键帧的值 0% ~ 100%
+			keyframeValue: function(){
+				return app.timeline.currentKeyframeValue();
+			},
+
+			// 返回当前关键帧的guid
 			process: function(){
-				return $('.animate-process').find(_selected).attr('value');
+				return app.timeline.current().attr('data-id');
+			},
+
+			firstProcess: function(){
+				return app.timeline.first().attr('data-id');
+			},
+
+			lastProcess: function(){
+				return app.timeline.last().attr('data-id');
 			}
 		});
 
@@ -143,13 +155,12 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				save: function(data){
 					this.saveBase();
 					this.saveFrames();
-
 					this.savePlace();
 				},
 
 				// 保存基础数据
-				saveBase: function(data){
-					data = this.getData(app.current.guid());
+				saveBase: function(){
+					var data = this.getData(app.current.guid());
 					// 获取动画基础数据
 					$('.animate-args').find('input[sign]').each(function(){
 						data.base[this.getAttribute('sign')] = this.value;
@@ -167,18 +178,26 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				},
 
 				// 保存关键帧数据
-				saveFrames: function(data, process){
+				saveFrames: function(){
+					var data, process;
+
 					data = this.getData(app.current.guid());
+					// 保存上一关键帧信息
 					process = app.current.process();
 					data.frames[process] ? '' : data.frames[process] = {};
 					$('.animate-effect').find('input[sign]').each(function(){
 						data.frames[process][this.getAttribute('sign')] = this.value;
 					});
+					// 保存关键帧的值
+					data.frames[process].value = app.current.keyframeValue(process);
 				},
 
 				// 保存位置信息
-				savePlace: function(data){
+				savePlace: function(){
+					var data, process;
+
 					data = this.getData(app.current.guid());
+					// 保存上一关键帧位置
 					process = app.current.process();
 					data.place[process] ? '' : data.place[process] = {};
 
@@ -188,10 +207,11 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 					this.calcPlace(data);
 				},
 
+				// 计算相对位移
 				calcPlace: function(data){
-					var width, height, data;
-					data = data || this.getData(app.current.guid());
-					if(!$.isEmptyObject(data.place['0%'])){
+					var width, height;
+
+					if(!$.isEmptyObject(data.place)){
 						width = app.current.element().width();
 						height = app.current.element().height();
 						// 计算当前位移
@@ -221,7 +241,6 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				// 重播动画帧数据
 				replayProcess: function(guid, process){
 					guid = guid || app.current.guid();
-					process = process || '0%';
 					$.each(cache.inputValue[guid].frames[process], function(key, value){
 						$('.animate-effect').find('input[sign="'+ key +'"]').val(value)
 					})
@@ -231,13 +250,13 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				replayPlace: function(guid, process){
 					var data = this.getData(app.current.guid());
 					var guid = guid || app.current.guid();
-					var process = process || '0%';
 					app.current.element().css({left: data.place[process].left, top: data.place[process].top})
 				},
 
 				replay: function(guid){
-					this.replayBase(guid);
-					this.replayProcess(guid);
+					// this.replayBase(guid);
+					// this.replayProcess(guid);
+					console.log('this function is droped')
 				}
 			}
 		});
@@ -282,48 +301,10 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 		this.exports('animate', function(){
 			var animateProcess = $('.animate-process');
 
-			// todo: 暂时不开放多动画模式
-			// 监听动画元素click事件
-			// app.current.canvas().delegate('.ap', 'click', function(){
-			// 	this.guid = this.getAttribute('guid');
-			// 	this.prev = app.current.element();
-			// 	this.prev.guid = app.current.guid();
-
-			// 	// 检查是否已存在动画对象
-			// 	// 检查动画对象是否更新
-			// 	if(cache.inputValue[this.guid] && this.guid !== this.prev.guid){
-			// 		// 条件为真
-			// 		// 重播当前动画对象数据
-			// 		app.form.replay(this.guid);
-			// 		// 切换到第一关键帧，防止数据重播失败
-			// 		animateProcess.find('.btn[value="0%"]').addClass(selected).siblings(_selected).removeClass(selected);
-			// 	};
-
-			// 	// 更新当前动画对象状态
-			// 	app.base.slideItem(this);
-			// });
-
 			// 保存并预览
 			$('#btnPlay').on('click', function(){
 				listen.fire('save');
 				listen.fire('play');
-			});
-
-			// 切换关键帧
-			animateProcess.delegate('.btn', 'click', function(){
-				var guid = app.current.guid();
-
-				// 发布数据保存事件
-				listen.fire('save');
-
-				// 重播当前帧数据
-				if(cache.inputValue[guid] && cache.inputValue[guid].frames[this.value]){
-					app.form.replayProcess(guid, this.value);
-					app.form.replayPlace(guid, this.value);
-				};
-
-				// 更新当前动画关键帧状态
-				app.base.slideItem(this);
 			});
 
 			// 动画播放完成动作
@@ -356,9 +337,9 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 				},
 
 				// 跳转到指定帧
-				toProcess: function(process){
-					process = process || '0%';
-					animateProcess.find('.btn[value="'+process+'"]').click();
+				toProcess: function(value){
+					value = value || '0%';
+					app.timeline.ui.element.find('[data-value="'+value+'"]').click();
 				},
 
 				// 返回指定guid动画对象
@@ -401,8 +382,34 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 		});
 
 		// 时间轴
-		this.exports('timeline', {
+		this.exports('timeline', function(){
+			var timeline;
 
+			// 生成时间轴
+			timeline = new Timeline({container: $('.clover-timeline')});
+			// 初始化时间轴事件
+			timeline.events.init(timeline);
+
+
+			//监听当前拖动的关键帧，返回更改后的结果
+			$(document).bind("keyMove", function (event, data) {
+				// console.log(data);
+			});
+
+			$(document).on('keyChange', function(e, data){
+				var guid = app.current.guid();
+
+				// 发布数据保存事件
+				listen.fire('save');
+
+				// 重播当前帧数据
+				if(cache.inputValue[guid] && cache.inputValue[guid].frames[data.current]){
+					app.form.replayProcess(guid, data.current);
+					app.form.replayPlace(guid, data.current);
+				};
+			});
+
+			return timeline;
 		});
 
 		// this.exports('control')
@@ -413,12 +420,15 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser'], function($, Pa
 
 		this.extend({
 			init: function(){
+				// 初始化动画元素拖拽
 				app.dragDom.on('.ap.selected');
+				// 初始化画布高度
+				app.current.canvas().height($('.clover-content').height());
 			},
 
 			bind: function(){
 				window.onresize = function(){
-					app.dragDom.on('.ap.selected');
+					page.init();
 				}
 			},
 
