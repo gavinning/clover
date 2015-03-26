@@ -3,6 +3,7 @@ require.config({
 	paths : {
 		zepto 		: 'libs/zepto.min',
 		dragDom 	: 'libs/dom-drag',
+		cssFormat	: 'libs/cssbeautify',
 
 		dragInpage 	: 'mods/drag',
 		guid 		: 'mods/guid',

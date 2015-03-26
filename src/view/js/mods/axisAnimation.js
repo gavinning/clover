@@ -108,14 +108,12 @@ define(['zepto', 'guid', 'listen'], function($, guid) {
 
 		//新建关键帧
 		create: function(e){
-			console.log(e)
 			var gid = guid();
 			var axisAnimation = $('#' +this.defaultConfig.axisAnimation),
 				left = Math.round((e.clientX - axisAnimation[0].offsetLeft)/axisAnimation[0].offsetWidth * 100);
 			// var left = e.clientX - e.currentTarget.offsetLeft;
 			// 数遍双击坐标
-			var left = e.layerX - e.currentTarget.offsetLeft;
-			console.log(e.clientX ,e.currentTarget.offsetLeft)
+			var left = e.layerX - this.ui.element.find('span').width()/2;
 			var percent = Math.round((left/axisAnimation[0].offsetWidth) * 100);
 			var index = axisAnimation.find('.axis-handle').length + 1;
 			var str = '<span class="axis-handle" style="left:' +left+ 'px" data-left="' +left+ '" data-id="'+gid+'" data-drag="0" data-value="'+percent+'%"><em class="percent">'+percent+'%</em></span>';

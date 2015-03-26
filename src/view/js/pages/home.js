@@ -10,7 +10,8 @@
 
  */
 
-define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], function($, Page, Cache, dragDom, Listen, Parser, Timeline){
+define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat'],
+	function($, Page, Cache, dragDom, Listen, Parser, Timeline, cssFormat){
 	var page = new Page;
 	var cache = new Cache;
 	var listen = new Listen;
@@ -312,6 +313,12 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 				listen.fire('play');
 			});
 
+			// 展示css代码
+			$('#btnCode').on('click', function(){
+				var css = $('style[data-id="clover"]').text();
+				console.log(cssFormat(css))
+			});
+
 			// 动画播放完成动作
 			app.current.element().get(0).addEventListener('webkitAnimationEnd', function(){
 				var self = this;
@@ -379,6 +386,13 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline'], fu
 					// 开始播放动画
 					this.playAnimate();
 				}
+			}
+		});
+
+		// 浮层模块
+		this.exports('dialog', {
+			render: function(data){
+				// var 
 			}
 		});
 
