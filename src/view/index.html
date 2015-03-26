@@ -97,6 +97,8 @@
 <script src="js/libs/socket.io.js"></script>
 <script data-main="js/init" src="js/require.js"></script>
 <script>
+// 本地环境尝试连接socket服务器
+if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){
 	var socket = io('http://localhost:8080');
 	socket.on('ready', function(data){
 		console.log(data)
@@ -106,8 +108,7 @@
 			location.reload();
 		}
 	});
-
-	// font-family: Gurmukhi MN
+}
 </script>
 </body>
 </html>
