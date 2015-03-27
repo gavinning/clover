@@ -319,6 +319,23 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 				console.log(cssFormat(css))
 			});
 
+			// 保存动画
+			$('#btnSave').on('click', function(){
+				var id = prompt('请输入动画名称：');
+				var css = $('style[data-id="clover"]').text();
+				var guid = app.current.guid();
+				var str = '[guid="' + guid + '"]'; 
+
+				if(id == null){
+					return id = prompt('请输入动画名称：')
+				}
+
+				// console.log(cssFormat(css).replace(str, '.' + id).replace(str, '.' + id))
+
+				localStorage.cloverAnimateId = id;
+				localStorage.cloverAnimateData = cssFormat(css).replace(str, '.' + id).replace(str, '.' + id);
+			});
+
 			// 动画播放完成动作
 			app.current.element().get(0).addEventListener('webkitAnimationEnd', function(){
 				var self = this;
@@ -456,9 +473,9 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 
 	});
 
-
-	page.reg();
+	return page;
+	// page.reg();
 	// For test
-	page.cache = cache;
-	window.page = page;
+	// page.cache = cache;
+	// window.page = page;
 });

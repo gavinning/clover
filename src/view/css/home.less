@@ -1,6 +1,9 @@
 @import 'lib/base';
 @import 'lib/reset';
 
+@import 'page/animate';
+
+
 /* 引入组件样式 */
 @import 'mod/axisAnimation.css';
 
@@ -150,6 +153,29 @@ body{
 
 	padding: 0 12px;
 	-webkit-box-sizing: border-box;
+}
+
+.clover-help{
+	color: #333;
+	padding: 0 12px;
+	font-size: 12px;
+	line-height: 1.6;
+	font-family: 'Lucida Grande', '宋体';
+	margin-bottom: 10px;
+
+	h3{
+		font-size: 14px;
+		color: #000;
+		font-weight: bold;
+	}
+
+	p{
+		margin-bottom: 6px;
+	}
+
+	&.imp h3{
+		color: #F01E1E;
+	}
 }
 
 

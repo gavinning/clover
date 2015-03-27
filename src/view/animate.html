@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Clover-animate</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no" />
+<meta name="author" content="gavinning" />
+<meta name="copyright" content="Copyright (c) 2014-2015 gavinning." />
+<meta name="description" content="Clover" />
+<meta name="format-detection" content="telephone=no">
+<link id="homeStyle" rel="stylesheet" href="css/home.css"/>
+</head>
+
+<body>
+<div class="clover-page">
+	<div class="clover-animate-show">
+		<img id="thisAnimate" src="images/3.jpg" alt="">
+	</div>
+
+	<div class="clover-animate-lib">
+		<button class="u-lib">test</button>
+		<button class="u-lib">test</button>
+		<button class="u-lib">test</button>
+		<button class="u-lib">test</button>
+		<button class="u-lib">test</button>
+	</div>
+	
+	<footer class="clover-footer">lincoapp clover by gavinning@2014-2015</footer>
+</div>
+
+
+<script src="js/libs/socket.io.js"></script>
+<script src="js/require.js"></script>
+<script src="js/require.config.js"></script>
+<script>
+require(['zepto', 'animate'], function($, animate){
+	animate.reg();
+});
+</script>
+<script>
+// 本地环境尝试连接socket服务器
+if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){
+	var socket = io('http://localhost:8080');
+	socket.on('ready', function(data){
+		console.log(data)
+	})
+	socket.on('change', function (data) {
+		if(data.change){
+			location.reload();
+		}
+	});
+}
+</script>
+</body>
+</html>

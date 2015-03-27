@@ -1,9 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Clover</title>
-<link rel="stylesheet" href="css/home.css">
+<meta charset="utf-8" />
+<title>Clover-home</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no" />
+<meta name="author" content="gavinning" />
+<meta name="copyright" content="Copyright (c) 2014-2015 gavinning." />
+<meta name="description" content="Clover" />
+<meta name="format-detection" content="telephone=no">
+<link id="homeStyle" rel="stylesheet" href="css/home.css"/>
 </head>
 <body>
 
@@ -13,11 +18,11 @@
 		<div class="clover-logo"></div>
 		<div class="header-control">
 			
-			<button id="btnCode" class="btn btn-code"></button>
-			<button id="btnDelete" class="btn btn-delete"></button>
+			<button id="btnCode" class="btn btn-code" title="打印代码"></button>
+			<button id="btnDelete" class="btn btn-delete dn"></button>
 			<button id="btnSave" class="btn btn-save"></button>
-			<button id="btnAdd" class="btn btn-add"></button>
-			<button id="btnPlay" class="btn btn-play"></button>
+			<button id="btnAdd" class="btn btn-add dn"></button>
+			<button id="btnPlay" class="btn btn-play" title="播放动画"></button>
 		</div>
 		<div class="header-aside"></div>
 	</header>
@@ -84,7 +89,32 @@
 		</div>
 
 		<div class="clover-aside instance-right">
+			<div class="clover-help imp">
+				<h3>创建动画示例操作-1：</h3>
+				<p>1. 点击选中100%关键帧，被选中后灰色色块将变为红色。</p>
+				<p>2. 拖动画布中图片到最右边，点击顶部播放按钮。</p>
+			</div>
+			<div class="clover-help imp">
+				<h3>创建动画示例操作-2：</h3>
+				<p>1. 刷新页面清空已有动画</p>
+				<p>2. 双击时间轴任意空白处创建自由关键帧，拖动画布中图片到任意你想要的位置。</p>
+				<p>3. 点击选中100%关键帧，拖动画布中图片到任意你想要的位置，不同之前的位置即可。</p>
+				<p>4. 播放</p>
+			</div>
+			<div class="clover-help imp">
+				<h3>创建动画示例操作-3：</h3>
+				<p>1. 左侧是更丰富的动画参数，自由发挥吧，你可以的</p>
+			</div>
 			
+			<div class="clover-help">
+				<h3>一些说明：</h3>
+				<p>1. 首先找到footer上方的时间轴，时间轴上的色块是动画关键帧，用于控制动画流程。</p>
+				<p>2. 灰色固定关键帧：不可拖动，可选中，选中态为红色。</p>
+				<p>3. 蓝色自由关键帧：可拖动，可选中，选中态为红色。</p>
+				<p>4. 0%和100%默认存在，双击时间轴空白处可创建自由关键帧。</p>
+				<p>5. 选中关键帧后即可改变左边侧栏的相关参数，或拖动动画元素位置进行创建动画。</p>
+				<p>6. 所有关键帧动画创建完毕，点击顶部播放按钮即可播放动画。</p>
+			</div>
 			<div class="animate-process" style="display: none;">
 				<button gid="1234" class="btn first selected" value="0%">0%</button>
 				<button gid="2345" class="btn last" value="60%">60%</button>
@@ -97,7 +127,22 @@
 </div>
 
 <script src="js/libs/socket.io.js"></script>
-<script data-main="js/init" src="js/require.js"></script>
+<script src="js/require.js"></script>
+<script src="js/require.config.js"></script>
+<script>
+require(['zepto', 'home'], function($, home){
+
+	// Zepto扩展重绘
+	$.fn.reflow =  function (){
+	    this.each(function(){
+	        this.nodeType && this.nodeType==1 && getComputedStyle(this).zoom;
+	    }); 
+	    return this;
+	};
+
+	home.reg();
+});
+</script>
 <script>
 // 本地环境尝试连接socket服务器
 if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){

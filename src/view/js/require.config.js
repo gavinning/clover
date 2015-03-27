@@ -13,25 +13,16 @@ require.config({
 		cache 		: 'mods/cache',
 		listen 		: 'mods/listen',
 		timeline	: 'mods/axisAnimation',
+		args 		: 'mods/args',
 
-		home		: 'pages/home'
+		home		: 'pages/home',
+		animate 	: 'pages/animate'
 	},
 	shim:{
 		'zepto': { 
 			exports: 'Zepto'
 		}
-	}
-});
-require(['zepto', 'pm'], function($, pm){
-	
-	// Zepto扩展重绘
-	$.fn.reflow =  function (){
-	    this.each(function(){
-	        this.nodeType && this.nodeType==1 && getComputedStyle(this).zoom;
-	    }); 
-	    return this;
-	};
-
-	pm.home();
-
+	},
+	// no cache
+	urlArgs: "bust=" +  (new Date()).getTime()
 });

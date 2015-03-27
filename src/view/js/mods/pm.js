@@ -1,11 +1,12 @@
-define(['home'], function(home){
+define(function(require){
 
-	var pm = {
-
-		home: function(){
-			console.log('enter home');
+	return {
+		// path.extname
+		extname: function (src, index) {
+			var arr = src.split('/');
+			var name = arr.slice(arr.length-1)[0];
+			return index ? name.replace(index, '') : name;
 		}
 	};
 
-	return pm;
 });
