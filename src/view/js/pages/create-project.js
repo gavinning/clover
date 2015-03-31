@@ -1,9 +1,13 @@
-define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom'], function($, Page, Listen, slideOptions, dragDom){
+define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'guid'],
+	function($, Page, Listen, slideOptions, dragDom, dragInpage, Guid){
 	var page = new Page;
 	var listen = new Listen;
 	var app = page.app;
-	var isAnimating = false;
 	var cache = {};
+
+	var selected = 'selected';
+	var _selected = '.selected';
+	var isAnimating = false;
 
 	cache = {
 
@@ -218,8 +222,14 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom'], function($, Page,
 				title: '动画库',
 				list: [localStorage.cloverAnimateId]
 			}
+			// 渲染动画库
 			slide.html(data).appendTo('.clover-aside.instance-left');
 			parent = $(slide.parent());
+
+			// 当前动画对象切换
+			app.current.canvas().delegate('.ap', 'click', function(){
+				$(this).addClass(selected).siblings(_selected).removeClass(selected)
+			});
 
 			// 绑定动画预览方法
 			parent.find('i').on('click', function(e){
@@ -234,6 +244,16 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom'], function($, Page,
 				// todo: 整理可播放动画列表，用于判断动画个数
 				// app.current.phone().css('overflow', 'hidden');
 			});
+
+			// 拖拽图片到页面
+			dragInpage(window, function(url, base64){
+
+				console.log(url, 123)
+
+				var guid = Guid();
+				app.animate.add(url, guid);
+				app.animate.init(guid);
+			})
 
 			return {
 
@@ -271,6 +291,10 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom'], function($, Page,
 							app.current.phone().css('overflow', 'inherit');
 						}, 200)
 					}, false);
+				},
+
+				add: function(src, guid){
+					app.current.phone().append('<img class="ap" guid="'+guid+'" src="'+src+'" />');
 				}
 			}
 		});

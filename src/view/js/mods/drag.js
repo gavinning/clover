@@ -2,7 +2,7 @@ define(['zepto'], function($) {
 
 	var drag = function(target, callback){
 		typeof target === 'string' ?
-			target = document.querySelector(target) : "";
+			target = document.querySelector(target) : target;
 
 		var dragover = function(e){
 			e.preventDefault();
@@ -19,9 +19,9 @@ define(['zepto'], function($) {
 		target.addEventListener("dragover", dragover, false);  
 		target.addEventListener("dragleave", dragleave, false);  
 		target.addEventListener("drop", drop, false);
-		$(document)[0].addEventListener("dragover", dragover, false);  
-		$(document)[0].addEventListener("dragleave", dragleave, false);  
-		$(document)[0].addEventListener("drop", drop, false);
+		// $(document)[0].addEventListener("dragover", dragover, false);  
+		// $(document)[0].addEventListener("dragleave", dragleave, false);  
+		// $(document)[0].addEventListener("drop", drop, false);
 	};
 
 	return drag;
