@@ -23,14 +23,6 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 	var isAnimating = false;
 
 
-	String.prototype.toNumber = function(){
-		return Number(this.replace('px', ''))
-	};
-
-	Number.prototype.toNumber = function(){
-		return this
-	};
-
 	// onload方法外定义模块位置可随意
 	// onload方法内定义模块需要位置提前，以保证程式执行顺序
 	page.onload(function(){
