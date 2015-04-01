@@ -16,11 +16,12 @@
 	<header class="clover-header">
 		<div class="clover-logo"></div>
 		<div class="header-control">
-			
-			<button id="btnCode" class="btn btn-code" title="打印代码"></button>
+			<div class="clover-create-pages" id="clover-create-pages">
+			</div>
+			<button id="btnCode" class="btn btn-code dn" title="打印代码"></button>
 			<button id="btnDelete" class="btn btn-delete dn"></button>
 			<button id="btnSave" class="btn btn-save"></button>
-			<button id="btnAdd" class="btn btn-add dn"></button>
+			<button id="btnAdd" class="btn btn-add"></button>
 			<button id="btnPlay" class="btn btn-play" title="播放动画"></button>
 		</div>
 		<div class="header-aside"></div>
@@ -32,8 +33,7 @@
 
 		<div id="cloverDragCanvas" class="clover-drag-area">
 			<div id="cloverMoni" class="clover-moni">
-				<img guid="d54fa4c557aca01e0182d4" class="ap" width="160" src="images/2.png">
-				<img guid="d54fa4c557aca01e0182d3" class="ap selected" width="160" src="images/2.png">
+				<!-- <div class="clover-build-page" guid="d54fa4c557aca01e0182d4"></div> -->
 			</div>
 		</div>
 
@@ -45,6 +45,40 @@
 				</div>
 				<button id="setScreen" class="btn1">自定义屏幕大小</button>
 			</div>
+
+			<div class="lincoapp-clover-slide-options" id="setPage">
+				<div class="slide-options">
+					<i id="css_set_background">设置为页面背景</i>
+					<i>居中对齐</i>
+				</div>
+			</div>
+
+			<div class="forms animate-args">
+				<label class="effect-label" for="">
+					<strong class="u-title">动画时间</strong>
+					<input id="clover-animate-time" sign="time" class="animate-input" type="text" data-value="1s" value="1s">
+					<input name="time" type="range" min="0" max="100" value="10" algorithm="0.1" unit="s">
+				</label>
+
+				<label class="effect-label" for="">
+					<strong class="u-title">动画延迟时间</strong>
+					<input id="clover-animate-delay" sign="delay" class="animate-input" type="text" data-value="0" placeholder="0s">
+					<input name="delay" type="range" min="0" max="100" value="0" algorithm="0.1" unit="s">
+				</label>
+
+				<label class="effect-label dn" for="">
+					<strong class="u-title">动画轨迹</strong>
+					<div id="slideOptions" class="slide-options">
+						<i class="selected">ease</i>
+						<i>linear</i>
+						<i>ease-in</i>
+						<i>ease-out</i>
+						<i>ease-in-out</i>
+					</div>
+					<input sign="function" class="animate-input" type="hidden" data-value="ease" value="ease">
+				</label>
+			</div>
+
 		</div>
 		
 	</div><!--.clover-content end-->

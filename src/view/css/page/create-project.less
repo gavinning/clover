@@ -1,5 +1,53 @@
 .clover-page-create-project{
 
+	.header-control{
+		position: relative;
+	}
+
+	.clover-create-pages{
+		text-align: left;
+		position: absolute;
+		z-index: 100;
+		left: 0;
+		top: 0;
+		width: 70%;
+		height: 100%;
+		overflow: hidden;
+		-webkit-transition: all 300ms ease;
+
+/*		&:hover{
+			width: 120%;
+			background: #fff;
+		}*/
+
+		i{
+			display: inline-block;
+			width: 26px;
+			height: 26px;
+			line-height: 26px;
+			text-align: center;
+			background: #fff;
+			border: 1px solid #d1d1d1;
+			margin-top: 6px;
+			margin-right: 6px;
+			cursor: default;
+
+			&.selected{
+				color: #fff;
+				background: #00A5ED;
+				border-color: #00A5ED;
+				border-radius: 2px;
+			}
+		}
+	}
+
+	.clover-aside{
+
+		&.instance-left{
+			width: 320px;
+		}
+	}
+
 	.clover-aside.instance-right{
 		width: 260px;
 
@@ -47,5 +95,32 @@
 		top: 50%;
 		margin: -284px 0 0 -160px;
 		outline: 1px dashed rgba(231, 203, 9, 0.8);
+	}
+
+	.forms{
+		padding: 0 12px;
+
+		input{
+			margin: 4px 0;
+		}
+
+		input[sign]{
+			width: 100%;
+			height: 26px;
+			border: 1px solid #ccc;
+			-webkit-box-sizing: border-box;
+		}
+
+		input[type="range"]{
+			width: 100%;
+		}
+
+		input.gray{
+			background: #efefef;
+
+			&:focus{
+				background: #fff;
+			}
+		}
 	}
 }

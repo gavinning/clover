@@ -20,7 +20,9 @@ require.config({
 
 		home		: 'pages/home',
 		animate 	: 'pages/animate',
-		createP 	: 'pages/create-project'
+		createP 	: 'pages/create-project',
+
+		animateLib	: 'tmp/animateLib'
 	},
 
 	packages: [
