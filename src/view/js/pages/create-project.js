@@ -372,6 +372,13 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 			parent = $(slide.parent());
 
 
+			// 画布点击事件
+			app.current.canvas().on('click', function(e){
+
+				// 用于删除画布内动画对象的选中状态
+				e.target === this ? $(this).find('.ap').removeClass(selected) : '';
+			});
+
 			// 当前动画对象切换
 			app.current.phone()
 			.delegate('.clover-build-page', 'click', function(){
