@@ -17,6 +17,7 @@
 		<div class="clover-logo"></div>
 		<div class="header-control">
 			<div class="clover-create-pages" id="clover-create-pages">
+				<!-- <i class="selected">1</i> -->
 			</div>
 			<button id="btnCode" class="btn btn-code dn" title="打印代码"></button>
 			<button id="btnDelete" class="btn btn-delete dn"></button>
@@ -54,6 +55,12 @@
 			</div>
 
 			<div class="forms animate-args">
+				<label class="effect-label" for="">
+					<strong class="u-title">图片大小</strong>
+					<input id="clover-animate-image" sign="image" class="animate-input" type="text" data-value="50%" value="50%">
+					<input name="image" type="range" min="1" max="100" value="50" algorithm="1" unit="%">
+				</label>
+
 				<label class="effect-label" for="">
 					<strong class="u-title">动画时间</strong>
 					<input id="clover-animate-time" sign="time" class="animate-input" type="text" data-value="1s" value="1s">

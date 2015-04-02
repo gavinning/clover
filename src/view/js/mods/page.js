@@ -78,6 +78,10 @@ define(['zepto'], function($){
 
 			removeItem: function(obj){
 				$(obj).removeClass('selected');
+			},
+
+			delay: function(time, fn){
+				return setTimeout(fn, time);
 			}
 		});
 

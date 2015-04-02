@@ -2,6 +2,18 @@
 @import 'lib/reset';
 
 .clover-build-page{
+	position: absolute;
+	left: 0;
+	top: 0;
 	width: inherit;
 	height: inherit;
+	background: #eee;
+
+	&[display="none"]{
+		opacity: 0;
+	}
+
+	&[app="hide"] .ap{
+		opacity: 0;
+	}
 }

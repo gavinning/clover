@@ -9,21 +9,36 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 	var _selected = '.selected';
 	var isAnimating = false;
 
+	// 触发动画播放的类
+	// 播放动画除了需要添加动画本身的类，还需要添加此类
+	var cloverjsAnimatePlay = 'cloverjs-animate-play';
+	var _cloverjsAnimatePlay = '.cloverjs-animate-play';
+
+	// 默认页面出入场动画
+	var cloverjsFadeIn = 'spaceInDown';
+	var cloverjsFadeOut = 'spaceOutUp';
+
+	// 用于存储数据
 	cache = {
 
 		// 页面对象
-		pages: {}
+		pages: {},
+		isAnimating: false,
+		fadeIn: cloverjsFadeIn,
+		fadeOut: cloverjsFadeOut,
+		fadeOutTime: 0
 	};
 
 	page.onload(function(){
 
 		// 监听动画播放
+		// 包括入场动画
 		listen.on('play', function(ap){
 
 			// 创建新的动画对象
 			if(!ap){
 				ap = app.current.vpage().find('.ap');
-				ap.push(app.current.vpage().get(0));
+				// ap.push(app.current.vpage().get(0));
 			};
 
 			// 检查是否处于动画状态
@@ -39,10 +54,64 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 					if(!animateName) return;
 
 					// 播放动画
-					$(this).addClass(app.current.getAnimateName(this.getAttribute('guid'))).addClass('fadeIn');
+					$(this).addClass(app.current.getAnimateName(this.getAttribute('guid'))).addClass(cloverjsAnimatePlay);
 					isAnimating = true;
 				})
 			}
+		});
+
+		// 监听页面入场
+		listen.on('fadeIn', function(ap){
+			var target, guid, animateName;
+
+			// 展示当前页
+			ap.attr('display', 'block');
+
+			// 等待出场动画完成
+			// 开始播放页面内动画
+			app.base.delay(1000, function(){
+				// 开始播放页面内动画
+				ap.attr('app', 'show');
+
+				listen.fire('play');
+			});
+
+
+			target = ap.get(0);
+			guid = target.getAttribute('guid');
+			// 获取当前动画对象动画id
+			animateName = app.current.getPageFadeIn();
+
+			// 检查是否存在出场动画
+			if(!animateName) return;
+
+			// 播放动画
+			ap.addClass(animateName).addClass(cloverjsAnimatePlay);
+			// 设置动画播放状态
+			cache.isAnimating = true;
+		});
+
+		// 监听页面出场
+		listen.on('fadeOut', function(ap){
+			var target, guid, animateName;
+
+			// ap.attr('display', 'none').attr('app', 'hide');
+			app.base.delay(1000, function(){
+				ap.attr('display', 'none').attr('app', 'hide');
+			});
+
+			target = ap.get(0);
+			guid = target.getAttribute('guid');
+			// 获取当前动画对象动画id
+			animateName = app.current.getPageFadeOut();
+
+			// 检查是否存在出场动画
+			if(!animateName) return;
+
+			// 播放动画
+			ap.addClass(animateName).addClass(cloverjsAnimatePlay);
+			// 设置动画播放状态
+			cache.isAnimating = true;
 		});
 
 
@@ -51,31 +120,35 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 			// 返回当前页面数据对象
 			page: function(){
 				// todo: 测试，默认为第一页
-				return cache.pages[this.pageNumber()];
+				return cache.pages[this.pageGuid()];
 			},
 
 			// 返回当前页面序号
-			pageNumber: function(){
-				// return Number($('#clover-create-pages').find(_selected).text());
-				return $('#clover-create-pages').find(_selected).text().toNumber();
+			pageGuid: function(){
+				return this.phone().find('[display="block"]').attr('guid');
 			},
 
-			// 返回画布
+			// 返回页面标志父级对象
+			sign: function(){
+				return $('#clover-create-pages')
+			},
+
+			// 返回画布Zepto对象
 			canvas: function(){
 				return $('#cloverDragCanvas');
 			},
 
-			// 返回手机对象
+			// 返回手机Zepto对象
 			phone: function(){
 				return $('#cloverMoni');
 			},
 
-			// 返回当前虚拟页对象
+			// 返回当前虚拟页Zepto对象
 			vpage: function(){
 				return $('#cloverMoni').find('.clover-build-page[guid="'+this.page().guid+'"]');
 			},
 
-			// 返回当前动画元素
+			// 返回当前动画Zepto对象
 			element: function(){
 				// vpage被当做一个不可移动的动画元素
 				return this.vpage().hasClass(selected) ?
@@ -95,27 +168,78 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 			// 返回当前动画对象动画id
 			animateName: function(value){
 				if(value){
-					this.animate().animateName = value
+					this.animate().animateFadeIn = value
 				} else {
-					return this.animate().animateName;
+					return this.animate().animateFadeIn;
 				}
 			},
 
 			// 创建页面对象
-			createPage: function(count, guid){
-				cache.pages[count] = {};
-				cache.pages[count].guid = guid;
+			createPage: function(guid){
 				// 初始化页面动画对象
 				// 把页面当做动画对象，不可拖动
-				cache.pages[count][guid] = {
+				cache.pages[guid] = {
+					guid: guid,
 					style: {},
-					animateName: ''
+					// 出场动画名称
+					animateFadeIn: '',
+					// 入场动画名称
+					animateFadeOut: '',
+					// 入场动画时间
+					animateFadeOut: 0
 				}
+			},
+
+			// 设置page全局入场动画
+			setPageFadeIn: function(name){
+				cache.fadeIn = name;
+			},
+
+			// 设置page全局出场动画
+			setPageFadeOut: function(name){
+				cache.fadeOut = name;
+			},
+
+			// 存储page全局出场动画时间
+			setPageFadeOutTime: function(time){
+				cache.fadeOutTime = time;
+			},
+
+			// 获取page全局入场动画
+			getPageFadeIn: function(guid){
+				// return guid ?
+				// 	cache.pages[guid].fadeIn:
+				// 	cache.pages.fadeIn;
+
+				return cache.fadeIn;
+			},
+
+			// 获取page全局出场动画
+			getPageFadeOut: function(guid){
+				// return guid ?
+				// 	cache.pages[guid].fadeOut:
+				// 	cache.pages.fadeOut;
+
+				return cache.fadeOut;
+			},
+
+			// 获取page全局出场动画时间
+			getPageFadeOutTime: function(guid){
+				// return guid ?
+				// 	cache.pages[guid].fadeOutTime:
+				// 	cache.pages.fadeOutTime;
+
+				return cache.fadeOutTime;
 			},
 
 			// 返回指定的动画对象
 			getElement: function(guid){
 				return this.vpage().find('.ap[guid="'+guid+'"]');
+			},
+
+			// 返回制定的虚拟页对象
+			getVpage: function(guid){
+				return this.phone().find('.clover-build-page[guid="'+guid+'"]');
 			},
 
 			// 返回指定的动画对象数据
@@ -126,24 +250,26 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 
 			// 返回指定的动画对象动画id
 			getAnimateName: function(guid){
-				return this.getAnimate(guid).animateName;
+				return this.getAnimateFadeIn(guid);
+			},
+
+			// 返回指定的动画对象的入场动画
+			getAnimateFadeIn: function(guid){
+				return this.getAnimate(guid).animateFadeIn;
+			},
+
+			// 返回指定的动画对象的出场动画
+			getAnimateFadeOut: function(guid){
+				return this.getAnimate(guid).animateFadeOut;
 			}
 		});
 
 		// Dom拖拽模块
+		// 适用于所有标准dom
 		this.exports('dragDom', {
 			// 绑定动画元素拖拽事件
 			on: function(tag) {
 				var x, xm, y, ym, canvas, ap, phone;
-
-				// // 检查是否存在src
-				// // 如果有src则异步load图片
-				// // 图片加载完成之后绑定拖拽事件
-				// if(src){
-				// 	return this.loadImg(src, function(){
-				// 		app.dragDom.on(tag)
-				// 	})
-				// };
 
 				// 绑定拖拽事件
 				ap = $(tag);
@@ -164,6 +290,7 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 				xm = x + canvas.width() - ap.width();
 				ym = y + canvas.height() - ap.height();
 
+				// 初始化拖拽
 				dragDom.init(tag, null, x, xm, y, ym);
 			},
 
@@ -248,13 +375,15 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 			// 当前动画对象切换
 			app.current.phone()
 			.delegate('.clover-build-page', 'click', function(){
+
+				// todo: 暂时停止在单页支持选择出入场动画
 				// 初始化vpage动画对象
 				// 使vpage具有ap动画对象的部分功能
-				this.clicked || app.animate.animateEnd(app.current.vpage().get(0));
-				this.clicked = true;
+				// this.clicked || app.animate.animateEnd(app.current.vpage().get(0));
+				// this.clicked = true;
 
 				// 点击画布时，取消当前选择对象选择状态
-				$(this).addClass(selected).find(_selected).removeClass(selected);
+				$(this).find(_selected).removeClass(selected); // .addClass(selected)
 			})
 			.delegate('.ap', 'click', function(e){
 				e.preventDefault();
@@ -273,10 +402,8 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 				// 高亮当前选中动画
 				app.base.slideItem(this);
 
-				$.get('/js/tmp/csslib/magic/'+this.innerText+'.less', function(data){
-					// 插入动画样式
-					app.animate.insertAnimateStyle(name, data);
-
+				// 加载动画样式
+				app.animate.loadAnimateStyle(this.innerText, function(){
 					// 播放动画
 					listen.fire('play', app.current.element());
 				});
@@ -288,12 +415,6 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 			// 全部播放
 			$('#btnPlay').on('click', function(){
 				listen.fire('play');
-
-				app.current.vpage().find('.ap').css('opacity', 0);
-
-				setTimeout(function(){
-					app.current.vpage().find('.ap').css('opacity', 1);
-				}, 1000)
 
 				// todo: 整理可播放动画列表，用于判断动画个数
 				// app.current.phone().css('overflow', 'hidden');
@@ -318,7 +439,12 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 				// 获取最终结果
 				value = (this.value * algorithm).toString().slice(0, 4) + unit;
 
-				$(this).prev('input[type="text"]').val(value)
+				$(this).prev('input[type="text"]').val(value);
+
+				// 处理图片 name=image
+				if(this.name === 'image'){
+					app.current.element().css('width', this.value + '%').css('max-width', '100%');
+				}
 			});
 
 			return {
@@ -351,12 +477,9 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 						setTimeout(function(){
 
 							// 清理动画类
-							$(target).removeClass('fadeIn').removeClass(animateName)
+							$(target).removeClass(cloverjsAnimatePlay).removeClass(animateName)
 							isAnimating = false;
 							console.log(guid + ' animate is end.')
-
-							// inherit
-							app.current.phone().css('overflow', 'inherit');
 						}, 200)
 					}, false);
 				},
@@ -367,6 +490,16 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 					app.current.vpage().append('<img class="ap" guid="'+guid+'" src="'+src+'" />');
 					// 选中新添加的动画元素
 					app.current.getElement(guid).click();
+				},
+
+				// 加载动画样式
+				loadAnimateStyle: function(name, fn){
+					$.get('/js/tmp/csslib/magic/'+name+'.less', function(data){
+						// 插入动画样式
+						app.animate.insertAnimateStyle(name, data);
+
+						fn && fn();
+					});
 				},
 
 				// 插入选中的动画样式
@@ -387,18 +520,35 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 						$('head').append('<style data-id="clover-'+name+'">'+css+'</style>');
 				},
 
+				// 创建动画基础数据
 				getAnimateFunction: function(name){
 					var time = $('#clover-animate-time').val() || '1s';
 					var delay = $('#clover-animate-delay').val() || 0;
 
-					return '.' +
-							name +
-							'.fadeIn {-webkit-animation: ' +
-							name + ' ' +
-							time +
-							' 1 ease ' +
-							delay +
-							' forwards}';
+					var animation = '.';
+					var space = ' ';
+					var count = 1;
+					var fn = 'ease';
+
+					// animation:
+					// .slideIn.cloverjsAnimatePlay{-webkit-animation: slideIn 1s 1 ease 0 forwards}
+					animation += name;
+					animation += _cloverjsAnimatePlay;
+					animation += space;
+					animation += '{-webkit-animation:';
+					animation += space;
+					animation += name;
+					animation += space;
+					animation += time;
+					animation += space;
+					animation += count;
+					animation += space;
+					animation += fn;
+					animation += space;
+					animation += delay;
+					animation += space;
+					animation += 'forwards}';
+					return animation;
 				}
 			}
 		});
@@ -417,8 +567,25 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 
 			// 虚拟页切换
 			vsign.delegate('i', 'click', function(){
+				// 如果选择页面即是当前页面，click禁止响应
+				if($(this).hasClass(selected)) return;
+
+				// 检查页面是否处于转场动画中
+				if(cache.isAnimating) return;
+
+
+				// 设置currentId;
+				this.leaveId = $(this).siblings(_selected).attr('data-id');
+				this.enterId = this.getAttribute('data-id');
+
+				// 当前页出场
+				app.page.leave(this.leaveId);
+
+				// 下一页入场
+				app.page.enter(this.enterId);
+
+				// 切换页面状态
 				app.base.slideItem(this);
-				app.current.vpage().show().siblings().hide();
 			});
 
 			// 创建新页面
@@ -433,7 +600,44 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 					// 初始化创建第一个页面
 					this.createPage();
 					// 初始化第一个页面标志
-					$('.clover-create-pages').find('i').eq(0).click();
+					$('.clover-create-pages').find('i').eq(0).addClass(selected);
+					// 初始化显示第一个页
+					app.current.phone().find('.clover-build-page').eq(0).attr('display', 'block');
+
+					// 初始化设置全局入场动画
+					app.current.setPageFadeIn(cloverjsFadeIn);
+					// 初始化全局入场动画样式
+					app.animate.loadAnimateStyle(cloverjsFadeIn);
+
+					// 初始化设置全局出场动画
+					app.current.setPageFadeOut(cloverjsFadeOut);
+					// 初始化设置全局出场动画时间
+					app.current.setPageFadeOutTime(1000);
+					// 初始化全局出场动画样式
+					app.animate.loadAnimateStyle(cloverjsFadeOut);
+				},
+
+				next: {},
+
+				// 虚拟页动画完毕事件监听
+				animateEnd: function(target){
+					target.addEventListener('webkitAnimationEnd', function(){
+						var guid = target.getAttribute('guid');
+						var fadeIn = app.current.getPageFadeIn();
+						var fadeOut = app.current.getPageFadeOut();
+
+						// 注销入场动画
+						setTimeout(function(){
+
+							// 清理动画类
+							$(target).removeClass(cloverjsAnimatePlay).removeClass(fadeIn).removeClass(fadeOut);
+							cache.isAnimating = false;
+							console.log(guid + ' page animate is end.')
+
+							// inherit
+							// app.current.phone().css('overflow', 'inherit');
+						}, 200)
+					}, false);
 				},
 
 				// set css
@@ -461,14 +665,40 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 					guid = Guid();
 
 					// 创建页面标志
-					element.append('<i>'+count+'</i>');
+					element.append('<i data-id="'+guid+'">'+count+'</i>');
 
 					// 创建页面对象
-					app.current.phone().append('<div class="clover-build-page" guid="'+guid+'"></div>');
+					app.current.phone()
+					.append('<div class="clover-build-page" display="none" guid="'+guid+'"></div>');
 
 					// 创建页面对象
-					app.current.createPage(count, guid);
+					app.current.createPage(guid);
+
+					// 设置为下一个页面
+					this.next.guid = guid;
+					this.next.element = app.current.getVpage(guid);
+
+					// 绑定动画结束事件
+					app.page.animateEnd(this.next.element.get(0));
+
+					// 初始化页面动画状态
+					this.next.element.get(0).isAnimating = false;
+				},
+
+				// 虚拟页出场
+				leave: function(guid){
+					// 播放出场动画
+					listen.fire('fadeOut', app.current.getVpage(guid));
+				},
+
+				// 虚拟页入场
+				enter: function(guid){
+					var fadeIn = app.current.getVpage(guid) || app.page.next.element;
+
+					// 播放当前页入场动画
+					listen.fire('fadeIn', fadeIn);
 				}
+
 			};
 		});
 
