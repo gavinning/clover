@@ -15,8 +15,8 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 	var _cloverjsAnimatePlay = '.cloverjs-animate-play';
 
 	// 默认页面出入场动画
-	var cloverjsFadeIn = 'spaceInDown';
-	var cloverjsFadeOut = 'spaceOutUp';
+	var cloverjsFadeIn = 'spaceInDown'; // spaceInDown foolishIn
+	var cloverjsFadeOut = 'spaceOutUp'; // spaceOutUp  foolishOut
 
 	// 用于存储数据
 	cache = {
@@ -454,6 +454,31 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 				}
 			});
 
+
+			// 针对动画对象的操作
+			$('#setPage').delegate('i', 'click', function(){
+
+				// 处理位置信息
+				if(this.className.indexOf('clover-position') >=0){
+					switch(this.getAttribute('type')){
+						case 'center': app.animate.alignCenter();
+						break;
+						
+						case 'left': app.animate.alignLeft();
+						break;
+						
+						case 'right': app.animate.alignRight();
+						break;
+						
+						case 'top': app.animate.alignTop();
+						break;
+						
+						case 'bottom': app.animate.alignBottom();
+						break;
+					}
+				}
+			});
+
 			return {
 
 				// 初始化一个动画对象
@@ -556,6 +581,37 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 					animation += space;
 					animation += 'forwards}';
 					return animation;
+				},
+
+				alignCenter: function(){
+					var element, phone;
+					element = app.current.element();
+					phone = app.current.phone();
+					app.current.element()
+						.css('left', phone.width()/2 - element.width()/2)
+						.css('top', phone.height()/2 - element.height()/2);
+				},
+
+				alignLeft: function(){
+					app.current.element().css('left', 0);
+				},
+
+				alignTop: function(){
+					app.current.element().css('top', 0);
+				},
+
+				alignBottom: function(){
+					var element, phone;
+					element = app.current.element();
+					phone = app.current.phone();
+					element.css('top', phone.height() - element.height());
+				},
+
+				alignRight: function(){
+					var element, phone;
+					element = app.current.element();
+					phone = app.current.phone();
+					element.css('left', phone.width() - element.width());
 				}
 			}
 		});
