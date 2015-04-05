@@ -1,0 +1,35 @@
+.lincoapp-clover-dialog {
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+}
+.lincoapp-clover-dialog .dialog-content {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  background: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 300px;
+  padding-bottom: 20px;
+}
+.lincoapp-clover-dialog .title {
+  height: 36px;
+  line-height: 36px;
+  padding: 0 12px;
+  border-bottom: 1px solid #ddd;
+}
+.lincoapp-clover-dialog .forms {
+  padding: 12px;
+}
+.lincoapp-clover-dialog .control {
+  padding: 0 12px;
+}
+.lincoapp-clover-dialog input {
+  border: 1px solid #ddd;
+  outline: none;
+}

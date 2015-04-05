@@ -115,17 +115,17 @@ require(['zepto', 'createP'], function($, page){
 </script>
 <script>
 // 本地环境尝试连接socket服务器
-if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){
-	var socket = io('http://localhost:8080');
-	socket.on('ready', function(data){
-		console.log(data)
-	})
-	socket.on('change', function (data) {
-		if(data.change){
-			location.reload();
-		}
-	});
-}
+// if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){
+// 	var socket = io('http://localhost:8080');
+// 	socket.on('ready', function(data){
+// 		console.log(data)
+// 	})
+// 	socket.on('change', function (data) {
+// 		if(data.change){
+// 			location.reload();
+// 		}
+// 	});
+// }
 </script>
 </body>
 </html>

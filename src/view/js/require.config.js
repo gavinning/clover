@@ -29,6 +29,11 @@ require.config({
 		{
 			name: 'clover-slide',
 			location: '/Modules/clover/slide-options'
+		},
+
+		{
+			name: 'clover-dialog',
+			location: '/Modules/clover/dialog'
 		}
 	],
 

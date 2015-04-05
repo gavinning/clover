@@ -38,6 +38,10 @@ define(['zepto', 'mtpl', 'guid'], function($, mtpl, guid){
 				return $(mtpl(dom, data, null, null, false))
 			},
 
+			css: function(){
+				return $('<style lincoapp="clover/dialog">'+this.data.css+'</style>');
+			},
+
 			parent: function(){
 				return document.getElementById(this.id);
 			}

@@ -10,8 +10,8 @@
 
  */
 
-define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat'],
-	function($, Page, Cache, dragDom, Listen, Parser, Timeline, cssFormat){
+define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat', 'clover-dialog'],
+	function($, Page, Cache, dragDom, Listen, Parser, Timeline, cssFormat, Dialog){
 	var page = new Page;
 	var cache = new Cache;
 	var listen = new Listen;
@@ -398,13 +398,6 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 			}
 		});
 
-		// 浮层模块
-		this.exports('dialog', {
-			render: function(data){
-				// var 
-			}
-		});
-
 		// 时间轴
 		this.exports('timeline', function(){
 			var timeline;
@@ -436,6 +429,27 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 		});
 
 		// this.exports('control')
+
+		// dialog相关
+		this.exports('dialog', function(){
+			var dialog;
+
+			dialog = new Dialog;
+
+			dialog.extend({
+				position: function(){
+					this.element = document.getElementById(this.id);
+					this.app = $(this.element).find('.dialog-content');
+					this.app
+						.css('margin-left', -this.app.width()/2)
+						.css('margin-top', -this.app.height()/2);
+				}
+			});
+
+			dialog.html({}).prependTo('body');
+			dialog.css().appendTo('head');
+			dialog.position();
+		});
 
 	});
 
