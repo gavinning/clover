@@ -1,5 +1,7 @@
-define(['zepto', 'page'], function($, Page){
+define(['zepto', 'page', 'parser', 'db'], function($, Page, Parser, db){
 	var page = new Page;
+	var parser = new Parser;
+
 	var lib = $('.clover-animate-lib');
 	var thisAnimate = $('#thisAnimate');
 	var isAnimating = false;
@@ -33,13 +35,21 @@ define(['zepto', 'page'], function($, Page){
 
 		},
 
-		render: function(){
-			var btn = $('<button class="u-lib">'+ localStorage.cloverAnimateId +'</button>');
+		insert: function(data){
+			var btn = $('<button class="u-lib"></button>');
+			var style = $('<style></style>');
 
-			lib.append(btn)
-			$('head').append('<style>'+ localStorage.cloverAnimateData +'</style>');
+			btn.attr('guid', data.guid).text(data.name).appendTo(lib);
+			style.attr('data-id', 'clover-' + data.guid).html(parser.one(data.animate)).appendTo('head');
+		},
+
+		render: function(){
+			var animate = db.get('animate');
+			$.each(animate, function(key, value){
+				page.insert(value);
+			})
 		}
-	})
+	});
 
 	return page;
-})
+});

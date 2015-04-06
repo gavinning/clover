@@ -13,11 +13,11 @@ Parser = function(){
 
 	this.extend({
 		// 开始编译css样式
-		parseArguments: function(obj) {
+		parseArguments: function(arr) {
 			var css = [];
-			$.each(obj, function(key, value){
+			arr.forEach(function(value){
 				css.push(self.buildAnimate(value))
-			})
+			});
 			return css.join('');
 		},
 
@@ -65,14 +65,19 @@ Parser = function(){
 
 		// 编译器入口
 		render: function(data){
-			var obj = {};
+			var arr = [];
 
 			// 分段格式化动画数据
 			$.each(data, function(key, value){
-				obj[key] = self.compile(value)
-			})
+				arr.push(self.compile(value))
+			});
 
-			return this.parseArguments(obj)
+			return this.parseArguments(arr)
+		},
+
+		// 单个编译入口
+		one: function(data){
+			return this.parseArguments([this.compile(data)]);
 		},
 
 		// 格式化单个动画对象

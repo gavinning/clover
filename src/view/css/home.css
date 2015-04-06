@@ -165,6 +165,13 @@ a {
   outline: none;
   background: #fff;
 }
+.clover-page-create-animate .current-animate {
+  float: left;
+  line-height: 40px;
+}
+.clover-page-create-animate .current-animate span {
+  color: #00A5ED;
+}
 .clover-page-create-animate .clover-content {
   display: -webkit-box;
   -webkit-box-flex: 1;

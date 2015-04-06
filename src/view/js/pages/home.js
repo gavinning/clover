@@ -480,6 +480,8 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 					data.animate = $.extend({}, app.current.animate());
 					db.set('animate', data);
 					dialog.hide();
+					// 页面输出名字
+					$('#currentAnimate').html(data.name);
 				// 取消动作
 				} else {
 					dialog.hide();
