@@ -1,4 +1,5 @@
 .lincoapp-clover-dialog {
+  display: none;
   position: fixed;
   z-index: 9999;
   left: 0;
@@ -20,16 +21,63 @@
 .lincoapp-clover-dialog .title {
   height: 36px;
   line-height: 36px;
-  padding: 0 12px;
+  padding: 0 16px;
   border-bottom: 1px solid #ddd;
 }
+.lincoapp-clover-dialog .u-title {
+  color: #858585;
+  padding: 4px 0;
+}
 .lincoapp-clover-dialog .forms {
-  padding: 12px;
+  padding: 8px 16px;
 }
 .lincoapp-clover-dialog .control {
-  padding: 0 12px;
+  display: -webkit-box;
+  padding: 0 16px;
 }
-.lincoapp-clover-dialog input {
-  border: 1px solid #ddd;
+.lincoapp-clover-dialog .btn {
+  border: 1px solid #d1d1d1;
+  border-radius: 3px;
+  background: #fff;
+  display: block;
+  height: 30px;
+  width: 50%;
+  -webkit-box-flex: 1;
+  margin-left: 10px;
   outline: none;
+}
+.lincoapp-clover-dialog .btn:first-child {
+  margin-left: 0;
+}
+.lincoapp-clover-dialog label {
+  display: block;
+  padding-bottom: 6px;
+}
+.lincoapp-clover-dialog input[type="text"] {
+  border: 1px solid #ddd;
+  padding: 0 4px;
+  outline: none;
+  width: 100%;
+  height: 26px;
+  -webkit-box-sizing: border-box;
+}
+.lincoapp-clover-dialog input[type="text"]:focus {
+  border-color: rgba(82, 168, 236, 0.8);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+.lincoapp-clover-dialog .slide-options {
+  font-size: 12px;
+}
+.lincoapp-clover-dialog .slide-options i {
+  font-style: normal;
+  display: inline-block;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.11);
+  border-radius: 2px;
+  margin-bottom: 4px;
+  cursor: default;
+}
+.lincoapp-clover-dialog .slide-options .selected {
+  color: #fff;
+  background: #00A5ED;
 }

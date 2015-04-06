@@ -17,6 +17,7 @@ require.config({
 		timeline	: 'mods/axisAnimation',
 		args 		: 'mods/args',
 		package 	: 'mods/package',
+		db 			: 'mods/db',
 
 		home		: 'pages/home',
 		animate 	: 'pages/animate',

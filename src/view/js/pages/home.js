@@ -10,8 +10,8 @@
 
  */
 
-define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat', 'clover-dialog'],
-	function($, Page, Cache, dragDom, Listen, Parser, Timeline, cssFormat, Dialog){
+define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat', 'clover-dialog', 'db', 'guid'],
+	function($, Page, Cache, dragDom, Listen, Parser, Timeline, cssFormat, Dialog, db, Guid){
 	var page = new Page;
 	var cache = new Cache;
 	var listen = new Listen;
@@ -311,23 +311,6 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 				console.log(cssFormat(css))
 			});
 
-			// 保存动画
-			$('#btnSave').on('click', function(){
-				var id = prompt('请输入动画名称：');
-				var css = $('style[data-id="clover"]').text();
-				var guid = app.current.guid();
-				var str = '[guid="' + guid + '"]'; 
-
-				if(id == null){
-					return id = prompt('请输入动画名称：')
-				}
-
-				// console.log(cssFormat(css).replace(str, '.' + id).replace(str, '.' + id))
-
-				localStorage.cloverAnimateId = id;
-				localStorage.cloverAnimateData = cssFormat(css).replace(str, '.' + id).replace(str, '.' + id);
-			});
-
 			// 动画播放完成动作
 			app.current.element().get(0).addEventListener('webkitAnimationEnd', function(){
 				var self = this;
@@ -432,23 +415,78 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 
 		// dialog相关
 		this.exports('dialog', function(){
-			var dialog;
-
-			dialog = new Dialog;
+			var dialog = new Dialog;
 
 			dialog.extend({
+				// 初始化dialog
+				init: function(){
+					if(this.check()) return;
+					this.html({}).prependTo('body');
+					this.css().appendTo('head');
+					this.check();
+				},
+				// 检查dialog是否存在
+				check: function(){
+					this.app = $('#' + this.id);
+					this.content = this.app.find('.dialog-content');
+					return this.app.length ? true : false;
+				},
+				// 初始化dialog位置
 				position: function(){
-					this.element = document.getElementById(this.id);
-					this.app = $(this.element).find('.dialog-content');
-					this.app
-						.css('margin-left', -this.app.width()/2)
-						.css('margin-top', -this.app.height()/2);
+					this.content
+						.css('margin-left', -this.content.width()/2)
+						.css('margin-top', -this.content.height()/2);
+				},
+				// 显示dialog
+				show: function(){
+					dialog.app.show();
+					dialog.position();
+				},
+				// 隐藏dialog
+				hide: function(){
+					dialog.app.hide();
+				},
+				// 获取dialog数据
+				getData: function(data){
+					data = {};
+					data.name = this.app.find('[name="animateName"]').val();
+					data.type = this.app.find('.animate-type.selected').attr('type');
+					return data;
+				},
+				// todo: test
+				testData: function(){
+					console.log(db.get('animate'))
+				}
+			});
+			dialog.init();
+
+			// 保存动画
+			$('#btnSave').on('click', dialog.show);
+
+			dialog.app
+			// 选择动画类型
+			.delegate('.animate-type', 'click', function(){
+				app.base.slideItem(this);
+			})
+			.delegate('.btn', 'click', function(){
+				var type, data;
+
+				type = this.getAttribute('type');
+				
+				// 提交动作
+				if(type === 'submit'){
+					data = dialog.getData();
+					data.guid = Guid();
+					data.animate = $.extend({}, app.current.animate());
+					db.set('animate', data);
+					dialog.hide();
+				// 取消动作
+				} else {
+					dialog.hide();
 				}
 			});
 
-			dialog.html({}).prependTo('body');
-			dialog.css().appendTo('head');
-			dialog.position();
+			return dialog;
 		});
 
 	});
@@ -479,9 +517,9 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 
 	});
 
+	page.cache = cache;
+	window.page = page;
 	return page;
 	// page.reg();
 	// For test
-	// page.cache = cache;
-	// window.page = page;
 });
