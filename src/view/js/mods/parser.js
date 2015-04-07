@@ -60,7 +60,7 @@ Parser = function(){
 
 		// 编译动画数据为css
 		buildAnimate: function(data) {
-			return this.buildInit(data) + this.buildStyle(data) + this.buildFrame(data)
+			return this.buildStyle(data) + this.buildFrame(data)
 		},
 
 		// 编译器入口

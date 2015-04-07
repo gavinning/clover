@@ -10,18 +10,22 @@
 
  */
 
-define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat', 'clover-dialog', 'db', 'guid'],
-	function($, Page, Cache, dragDom, Listen, Parser, Timeline, cssFormat, Dialog, db, Guid){
+define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat', 'clover-dialog', 'db', 'guid'],
+	function($, Page, dragDom, Listen, Parser, Timeline, cssFormat, Dialog, db, Guid){
 	var page = new Page;
-	var cache = new Cache;
 	var listen = new Listen;
 	var parser = new Parser;
 	var app = page.app;
+	var cache = {};
 
 	var selected = 'selected';
 	var _selected = '.selected';
 	var isAnimating = false;
 
+	// 用于存储当前动画相关参数
+	cache.current = {};
+	// 动画数据
+	cache.current.animate = {};
 
 	// onload方法外定义模块位置可随意
 	// onload方法内定义模块需要位置提前，以保证程式执行顺序
@@ -66,7 +70,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 
 			// 返回当前动画对象
 			element: function(){
-				return this.canvas().find('.ap.selected')
+				return $('#apElement')
 			},
 
 			// 返回当前动画对象guid
@@ -76,8 +80,29 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 
 			// 返回当前动画对象动画数据
 			animate: function(){
-				return cache.inputValue[this.guid()]
+				return cache.current.animate;
 			},
+
+			// 初始化动画对象
+			init: function(src){
+				// 存储guid
+				cache.current.guid = Guid();
+				// 初始化动画数据对象
+				cache.current.animate = {
+					init: {},
+					base: {},
+					frames: {},
+					place: {}
+				};
+
+				// 为动画对象更新guid
+				this.element().attr('guid', cache.current.guid);
+				// 初始化动画对象位置
+				this.element().css({top: 0, left: 0});
+				// 为动画对象更新URL
+				!src || this.element().attr('src', src);
+			},
+
 
 			// 返回当前关键帧的值 0% ~ 100%
 			keyframeValue: function(){
@@ -132,21 +157,6 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 			});
 
 			return {
-				// 获取动画数据
-				// 动画数据模型创建
-				getData: function(guid){
-					var guid = guid || app.current.guid();
-					var dataModel = {
-						init: {},
-						base: {},
-						frames: {},
-						place: {},
-						guid: guid
-					};
-					typeof cache.inputValue[guid] === 'object' ? '' : cache.inputValue[guid] = dataModel;
-					return cache.inputValue[guid];
-				},
-
 				// 保存表单数据
 				save: function(data){
 					this.saveBase();
@@ -156,15 +166,15 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 
 				// 保存基础数据
 				saveBase: function(){
-					var data = this.getData(app.current.guid());
+					var data = app.current.animate();
 					// 获取动画基础数据
 					$('.animate-args').find('input[sign]').each(function(){
 						data.base[this.getAttribute('sign')] = this.value;
 					});
 					// 扩展动画基础数据
 					$.extend(data.base, {
-						className: '.fadeIn[guid="'+ data.guid +'"]',
-						name: 'Clover-' + data.guid,
+						className: '.fadeIn[guid="'+ app.current.guid() +'"]',
+						name: 'Clover-' + app.current.guid(),
 						count: 1,
 						mode: 'forwards' // backwards || forwards || both
 						// 当mode的值为forwards时，动画结束时需要删除动画类fadeIn，并初始化0%的绝对位置，以达到重置动画位置的目的（推荐）
@@ -177,7 +187,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 				saveFrames: function(){
 					var data, process;
 
-					data = this.getData(app.current.guid());
+					data = app.current.animate();
 					process = app.current.process();
 					// 检查关键帧对象是否存在
 					data.frames[process] ? '' : data.frames[process] = {};
@@ -193,7 +203,7 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 				savePlace: function(){
 					var data, process;
 
-					data = this.getData(app.current.guid());
+					data = app.current.animate();
 					process = app.current.process();
 					data.place[process] ? '' : data.place[process] = {};
 					// 保存关键帧位置信息到place对象
@@ -229,32 +239,29 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 				},
 
 				// 重播动画基础数据
-				replayBase: function(guid){
-					guid = guid || app.current.guid();
-					$.each(cache.inputValue[guid].base, function(key, value){
+				replayBase: function(){
+					$.each(cache.current.animate.base, function(key, value){
 						$('.animate-args').find('input[sign="'+ key +'"]').val(value)
 					})
 				},
 
 				// 重播动画帧数据
-				replayProcess: function(guid, process){
-					guid = guid || app.current.guid();
-					$.each(cache.inputValue[guid].frames[process], function(key, value){
+				replayProcess: function(process){
+					$.each(cache.current.animate.frames[process], function(key, value){
 						$('.animate-effect').find('input[sign="'+ key +'"]').val(value)
 					})
 				},
 
 				// 重播动画位置
-				replayPlace: function(guid, process){
-					var data = this.getData(app.current.guid());
-					var guid = guid || app.current.guid();
+				replayPlace: function(process){
+					var data = app.current.animate();
 					app.current.element().css({left: data.place[process].left, top: data.place[process].top})
 				},
 
 				// 重播动画数据
-				replay: function(guid, process){
-					this.replayProcess(guid, process);
-					this.replayPlace(guid, process);
+				replay: function(process){
+					this.replayProcess(process);
+					this.replayPlace(process);
 				}
 			}
 		});
@@ -340,10 +347,10 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 					app.timeline.ui.element.find('[data-value="'+value+'"]').click();
 				},
 
-				// 返回指定guid动画对象
-				element: function(guid){
-					return app.current.canvas().find('.ap[guid="'+ guid +'"]');
-				},
+				// // 返回指定guid动画对象
+				// element: function(guid){
+				// 	return app.current.canvas().find('.ap[guid="'+ guid +'"]');
+				// },
 
 				// 创建clover style
 				createCloverStyle: function(){
@@ -359,15 +366,14 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 					$('head').append(style);
 				},
 
-				playAnimate: function(guid){
+				playAnimate: function(){
 					var css;
-					guid = guid || app.current.guid();
 					// 编译动画规则
-					css = parser.render(cache.inputValue);
+					css = parser.one(cache.current.animate);
 					// 渲染css
 					this.render(css);
 					// 执行动画
-					this.element(guid).removeClass('fadeIn').reflow().addClass('fadeIn');
+					app.current.element().removeClass('fadeIn').reflow().addClass('fadeIn');
 				},
 
 				play: function(){
@@ -396,14 +402,13 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 			// });
 
 			$(document).on('keyChange', function(e, data){
-				var guid = app.current.guid();
 
 				// 发布数据保存事件
 				listen.fire('save');
 
 				// 重播当前帧数据
-				if(cache.inputValue[guid] && cache.inputValue[guid].frames[data.current]){
-					app.form.replay(guid, data.current);
+				if(cache.current.animate && cache.current.animate.frames[data.current]){
+					app.form.replay(data.current);
 				};
 			});
 
@@ -447,11 +452,10 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 					dialog.app.hide();
 				},
 				// 获取dialog数据
-				getData: function(data){
-					data = {};
-					data.name = this.app.find('[name="animateName"]').val();
-					data.type = this.app.find('.animate-type.selected').attr('type');
-					return data;
+				getData: function(){
+					cache.current.name = this.app.find('[name="animateName"]').val();
+					cache.current.type = this.app.find('.animate-type.selected').attr('type');
+					return cache.current;
 				},
 				// todo: test
 				testData: function(){
@@ -476,9 +480,8 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 				// 提交动作
 				if(type === 'submit'){
 					data = dialog.getData();
-					data.guid = Guid();
-					data.animate = $.extend({}, app.current.animate());
-					db.set('animate', data);
+					console.log(data, 124)
+					// db.set('animate', data);
 					dialog.hide();
 					// 页面输出名字
 					$('#currentAnimate').html(data.name);
@@ -499,9 +502,11 @@ define(['zepto', 'page', 'cache', 'dragDom', 'listen', 'parser', 'timeline', 'cs
 			// 页面初始化
 			init: function(){
 				// 初始化动画元素拖拽
-				app.dragDom.on('.ap.selected');
+				app.dragDom.on('#apElement');
 				// 初始化画布高度
 				app.current.canvas().height($('.clover-content').height());
+				// 初始化动画对象
+				app.current.init();
 			},
 
 			// 执行全局事件监听

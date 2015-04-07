@@ -21,7 +21,14 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 	// 用于存储数据
 	cache = {
 
-		// 页面对象
+		page: {
+			forwardIn: '',
+			forwardOut: '',
+			backwardIn: '',
+			backwardOut: ''
+		},
+
+		// 页面对象组
 		pages: {},
 		isAnimating: false,
 		fadeIn: cloverjsFadeIn,
