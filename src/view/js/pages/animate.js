@@ -6,6 +6,11 @@ define(['zepto', 'page', 'parser', 'db'], function($, Page, Parser, db){
 	var thisAnimate = $('#thisAnimate');
 	var isAnimating = false;
 
+	// 触发动画播放的类
+	// 播放动画除了需要添加动画本身的类，还需要添加此类
+	var cloverjsAnimatePlay = 'cloverjs-animate-play';
+	var _cloverjsAnimatePlay = '.cloverjs-animate-play';
+
 	page.extend({
 		id: 'animate',
 
@@ -15,10 +20,16 @@ define(['zepto', 'page', 'parser', 'db'], function($, Page, Parser, db){
 
 		bind: function(){
 			lib.delegate('.u-lib', 'click', function(){
-				if(this.innerText !== 'test' && !isAnimating){
-					thisAnimate.addClass(this.innerText).addClass('fadeIn');
-					isAnimating = true;
-				}
+				var data, guid;
+
+				// 检查动画状态
+				if(isAnimating) return;
+
+				guid = this.getAttribute('guid');
+				data = page.data[guid];
+
+				thisAnimate.addClass(cloverjsAnimatePlay).addClass(data.className);
+				isAnimating = true;
 			});
 
 			// 动画播放完成动作
@@ -26,7 +37,7 @@ define(['zepto', 'page', 'parser', 'db'], function($, Page, Parser, db){
 				// 注销入场动画
 				setTimeout(function(){
 					// 清理动画类
-					thisAnimate.attr('class', '');
+					thisAnimate.removeAttr('class');
 					// 重置动画状态
 					isAnimating = false;
 				}, 200)
@@ -44,10 +55,10 @@ define(['zepto', 'page', 'parser', 'db'], function($, Page, Parser, db){
 		},
 
 		render: function(){
-			var animate = db.get('animate');
-			$.each(animate, function(key, value){
+			this.data = db.get('animate') || {};
+			$.each(this.data, function(key, value){
 				page.insert(value);
-			})
+			});
 		}
 	});
 

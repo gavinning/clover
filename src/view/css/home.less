@@ -11,6 +11,7 @@
 
 /* 引入组件样式 */
 @import 'mod/axisAnimation.css';
+@import 'mod/scroll.css';
 
 
 /* 变量 */
@@ -19,11 +20,7 @@
 
 body{
 	color: #333;
-	position: absolute;
-	width: 100%;
-	height: 100%;
 	background: #f9f9f9;
-	overflow-x: hidden;
 	opacity: 0;
 	-webkit-transition: opacity ease 300ms;
 }
@@ -32,12 +29,6 @@ embed{
 }
 
 .clover-page{
-	min-width: 1000px;
-	width: inherit;
-	height: inherit;
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
 
 	.dn{
 		display: none !important;
@@ -191,6 +182,10 @@ embed{
 
 	.forms h3{
 		color: #fff;
+	}
+
+	&.instance-left{
+		overflow-y: scroll;
 	}
 }
 

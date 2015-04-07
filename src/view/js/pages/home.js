@@ -22,10 +22,18 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 	var _selected = '.selected';
 	var isAnimating = false;
 
+	// 触发动画播放的类
+	// 播放动画除了需要添加动画本身的类，还需要添加此类
+	var cloverjsAnimatePlay = 'cloverjs-animate-play';
+	var _cloverjsAnimatePlay = '.cloverjs-animate-play';
+
 	// 用于存储当前动画相关参数
 	cache.current = {};
 	// 动画数据
 	cache.current.animate = {};
+	// 用于提交的数据
+	// 原始数据需要经过处理
+	cache.submit = {};
 
 	// onload方法外定义模块位置可随意
 	// onload方法内定义模块需要位置提前，以保证程式执行顺序
@@ -51,6 +59,11 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 			app.animate.play();
 		});
 
+		// 监听动画停止事件
+		listen.on('stop', function(){
+			isAnimating = false;
+			app.current.element().removeClass(cloverjsAnimatePlay).removeClass(cache.current.className);
+		});
 
 		// 公共方法模块定义
 		this.exports('base', {
@@ -87,6 +100,8 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 			init: function(src){
 				// 存储guid
 				cache.current.guid = Guid();
+				// 设置className
+				cache.current.className = 'clover-' + cache.current.guid;
 				// 初始化动画数据对象
 				cache.current.animate = {
 					init: {},
@@ -136,6 +151,9 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				// 同步更新隐藏表单值，以便数据保存
 				$(this).parent().siblings('[sign="function"]').val(this.innerText);
 
+				// 结束动画
+				listen.fire('stop');
+
 				// 保存并预览
 				listen.fire('save');
 				listen.fire('play');
@@ -144,8 +162,10 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 			// 处理range控件
 			// 同步更新表单的值
 			$('.effect-label').delegate('input[type="range"]', 'input', function(){
-				var value, algorithm, unit;
+				var value, algorithm, unit, prev;
 
+				// 查找输入框
+				prev = $(this).prev('input[type="text"]');
 				// 获取倍数
 				algorithm = this.getAttribute('algorithm') || 1;
 				// 获取单位
@@ -153,7 +173,12 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				// 获取最终结果
 				value = (this.value * algorithm).toString().slice(0, 4) + unit;
 
-				$(this).prev('input[type="text"]').val(value)
+				// 处理永动动画
+				if(this.name === 'count' && value.toNumber() === 100){
+					value  = 'infinite';
+				};
+
+				prev.val(value);
 			});
 
 			return {
@@ -173,9 +198,8 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 					});
 					// 扩展动画基础数据
 					$.extend(data.base, {
-						className: '.fadeIn[guid="'+ app.current.guid() +'"]',
-						name: 'Clover-' + app.current.guid(),
-						count: 1,
+						className: '.' + cache.current.className + _cloverjsAnimatePlay,
+						name: cache.current.className,
 						mode: 'forwards' // backwards || forwards || both
 						// 当mode的值为forwards时，动画结束时需要删除动画类fadeIn，并初始化0%的绝对位置，以达到重置动画位置的目的（推荐）
 						// 当mode的值为backwards时，动画结束时，只需要初始化0%的绝对位置即可达到重置动画位置的目的
@@ -325,7 +349,7 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				// 注销入场动画
 				setTimeout(function(){
 					// 清理动画类
-					$(self).removeClass('fadeIn');
+					$(self).removeClass(cloverjsAnimatePlay).removeClass(cache.current.className);
 					// 更新动画停驻位置为100%
 					app.animate.toProcess('100%');
 
@@ -373,7 +397,8 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 					// 渲染css
 					this.render(css);
 					// 执行动画
-					app.current.element().removeClass('fadeIn').reflow().addClass('fadeIn');
+					app.current.element().removeClass(cloverjsAnimatePlay).removeClass(cache.current.className).reflow()
+					.addClass(cloverjsAnimatePlay).addClass(cache.current.className);
 				},
 
 				play: function(){
@@ -472,6 +497,7 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 			.delegate('.animate-type', 'click', function(){
 				app.base.slideItem(this);
 			})
+			// 按钮事件
 			.delegate('.btn', 'click', function(){
 				var type, data;
 
@@ -480,8 +506,7 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				// 提交动作
 				if(type === 'submit'){
 					data = dialog.getData();
-					console.log(data, 124)
-					// db.set('animate', data);
+					db.set('animate', data);
 					dialog.hide();
 					// 页面输出名字
 					$('#currentAnimate').html(data.name);
@@ -501,24 +526,32 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 		this.extend({
 			// 页面初始化
 			init: function(){
-				// 初始化动画元素拖拽
-				app.dragDom.on('#apElement');
-				// 初始化画布高度
-				app.current.canvas().height($('.clover-content').height());
 				// 初始化动画对象
 				app.current.init();
+
+				this.resize();
 			},
 
 			// 执行全局事件监听
 			bind: function(){
+
 				window.onresize = function(){
-					page.init();
+					page.resize();
 				}
 			},
 
 			// 执行页面渲染
 			render: function(){
 
+			},
+
+			resize: function(){
+				// 初始化动画元素拖拽
+				app.dragDom.on('#apElement');
+				// 初始化窗口高度
+				$('#page-create-animate').height(window.innerHeight);
+				// 初始化画布高度
+				app.current.canvas().height($('.clover-content').height());
 			}
 		});
 

@@ -8,7 +8,7 @@ define(function(){
 	return {
 
 		get: function(type, guid, fn){
-			cache = JSON.parse(db[index]);
+			cache = JSON.parse(db[index] || '{}');
 			return guid ? cache[type][guid] : cache[type];
 			// guid ? fn(cache[type][guid]) : fn(cache[type]);
 		},
