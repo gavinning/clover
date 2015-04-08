@@ -55,3 +55,29 @@
 	background: #c00;
 	border-color: #c00;
 }
+
+.light-decoration{
+	position: absolute;
+	left: -20%;
+	top: 0;
+	width: 360px;
+	height: 10px;
+	background: url(../../images/light.png) no-repeat;
+	background-position: left -69px;
+}
+.light-decoration.fadeIn{
+	-webkit-animation: light 6s infinite ease 2s;
+}
+@-webkit-keyframes light{
+	0%{
+		left: -10%;
+	}
+
+	20%{
+		left: 120%;
+	}
+
+	100%{
+		left: 120%;
+	}
+}

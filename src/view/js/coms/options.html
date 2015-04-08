@@ -1,0 +1,14 @@
+<div class="lincoapp-clover-slide-options" id=<%= typeof id === 'string' ? id : '' %>>
+	<%if(typeof title === 'string'){%>
+	<strong class="slide-title"><%=title%></strong>
+	<%}%>
+	<div class="slide-options">
+	<%for(var i=0, len=list.length; i<len; i++){%>
+		<%if(typeof selected === 'number' && selected === i){%>
+			<i class="selected"><%=list[i]%></i>
+		<%}else{%>
+			<i><%=list[i]%></i>
+		<%}%>
+	<%}%>
+	</div>
+</div>

@@ -86,6 +86,7 @@ define(['zepto', 'guid', 'listen'], function($, guid) {
 			var gid1 = 'process-guid-first', gid2 = 'process-guid-last';
 
 			var html =  '	<div id="'+this.config.wrapper+'"  class="axis-wrapper">'+
+						'		<div id="lightDecoration" class="light-decoration fadeIn"></div>'+
 						'		<div id="'+this.config.axisAnimation+'" class="axis-animation">'+
 						'			<span class="axis-handle-first disabled selected" style="left:0%;" data-id="' +gid1+ '" data-drag="0" data-value="0%"><em class="percent">0%</em></span>'+
 						'			<span class="axis-handle-last disabled" style="right:0%;" data-id="' +gid2+ '" data-drag="0" data-value="100%"><em class="percent">100%</em></span>'+

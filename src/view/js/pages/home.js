@@ -10,8 +10,8 @@
 
  */
 
-define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat', 'clover-dialog', 'db', 'guid'],
-	function($, Page, dragDom, Listen, Parser, Timeline, cssFormat, Dialog, db, Guid){
+define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat', 'dialog', 'db', 'guid'],
+	function($, Page, dragDom, Listen, Parser, Timeline, cssFormat, dialog, db, Guid){
 	var page = new Page;
 	var listen = new Listen;
 	var parser = new Parser;
@@ -76,9 +76,19 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 
 		// 当前环境变量模块
 		this.exports('current', {
+			// 返回创作中心对象
+			creativeCenter: function(){
+				return $('#cloverCreativeCenter')
+			},
+
 			// 返回当前画布对象
 			canvas: function(){
 				return $('#cloverDragCanvas')
+			},
+
+			// 返回当前动画对象原点
+			origin: function(){
+				return $('#apOrigin')
 			},
 
 			// 返回当前动画对象
@@ -309,11 +319,12 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				ap = $(tag);
 				canvas = app.current.canvas();
 
-				x = 0;
-				y = 0;
+				x = -(canvas.width() - ap.width())/2;
+				y = -(canvas.height() - ap.height())/2;
 				xm = x + canvas.width() - ap.width();
 				ym = y + canvas.height() - ap.height();
 
+				app.nav.initOrigin();
 				dragDom.init(document.querySelector(tag), null, x, xm, y, ym);
 			},
 
@@ -322,6 +333,78 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				var img = new Image();
 				img.src = src;
 				img.onload = callback || function(){};
+			}
+
+		});
+
+		// 创作中心相关操作
+		this.exports('nav', function(){
+			var ap, canvas, origin, shadowOrigin;
+
+			canvas = app.current.canvas();
+			ap = app.current.element();
+			origin = app.current.origin();
+			shadowOrigin = $('#shadowOrigin');
+
+			// 导航器相关
+			$('#cloverNavigator').delegate('td', 'click', function(){
+				var type;
+
+				type = this.getAttribute('type');
+				
+				if(app.nav[type]) app.nav[type]();
+			});
+
+			return {
+				initOrigin: function(){
+					origin.width(ap.width()).height(ap.height()).
+					css({marginLeft: -ap.width()/2, marginTop: -ap.height()/2});
+				},
+
+				shadowOrigin: function(){
+					// shadowOrigin.width(apWidth).height(apHeight).
+					// css({marginLeft: -apWidth/2, marginTop: -apHeight/2});
+				},
+
+				resize: function(){
+
+				},
+
+				center: function(){
+					ap.css('top', 0).css('left', 0);
+				},
+
+				left: function(){
+					ap.css('top', 0).css('left', -canvas.width()/2 + ap.width()/2);
+				},
+
+				right: function(){
+					ap.css('top', 0).css('left', canvas.width()/2 - ap.width()/2);
+				},
+
+				top: function(){
+					ap.css('left', 0).css('top', -canvas.height()/2 + ap.height()/2);
+				},
+
+				bottom: function(){
+					ap.css('left', 0).css('top', canvas.height()/2 - ap.height()/2);
+				},
+
+				leftTop: function(){
+					ap.css('left', -canvas.width()/2 + ap.width()/2).css('top', -canvas.height()/2 + ap.height()/2);
+				},
+
+				leftBottom: function(){
+					ap.css('left', -canvas.width()/2 + ap.width()/2).css('top', canvas.height()/2 - ap.height()/2);
+				},
+
+				rightTop: function(){
+					ap.css('left', canvas.width()/2 - ap.width()/2).css('top', -canvas.height()/2 + ap.height()/2);
+				},
+
+				rightBottom: function(){
+					ap.css('left', canvas.width()/2 - ap.width()/2).css('top', canvas.height()/2 - ap.height()/2);
+				},
 			}
 		});
 
@@ -441,84 +524,23 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 			return timeline;
 		});
 
-		// this.exports('control')
-
-		// dialog相关
+		// dialog模块相关
 		this.exports('dialog', function(){
-			var dialog = new Dialog;
+			// 初始化dialog和事件
+			dialog.initEvent();
 
-			dialog.extend({
-				// 初始化dialog
-				init: function(){
-					if(this.check()) return;
-					this.html({}).prependTo('body');
-					this.css().appendTo('head');
-					this.check();
-				},
-				// 检查dialog是否存在
-				check: function(){
-					this.app = $('#' + this.id);
-					this.content = this.app.find('.dialog-content');
-					return this.app.length ? true : false;
-				},
-				// 初始化dialog位置
-				position: function(){
-					this.content
-						.css('margin-left', -this.content.width()/2)
-						.css('margin-top', -this.content.height()/2);
-				},
-				// 显示dialog
-				show: function(){
-					dialog.app.show();
-					dialog.position();
-				},
-				// 隐藏dialog
-				hide: function(){
-					dialog.app.hide();
-				},
-				// 获取dialog数据
-				getData: function(){
-					cache.current.name = this.app.find('[name="animateName"]').val();
-					cache.current.type = this.app.find('.animate-type.selected').attr('type');
-					return cache.current;
-				},
-				// todo: test
-				testData: function(){
-					console.log(db.get('animate'))
-				}
-			});
-			dialog.init();
-
-			// 保存动画
-			$('#btnSave').on('click', dialog.show);
-
-			dialog.app
-			// 选择动画类型
-			.delegate('.animate-type', 'click', function(){
-				app.base.slideItem(this);
-			})
-			// 按钮事件
-			.delegate('.btn', 'click', function(){
-				var type, data;
-
-				type = this.getAttribute('type');
-				
-				// 提交动作
-				if(type === 'submit'){
-					data = dialog.getData();
-					db.set('animate', data);
-					dialog.hide();
-					// 页面输出名字
-					$('#currentAnimate').html(data.name);
-				// 取消动作
-				} else {
-					dialog.hide();
-				}
+			// 启用dialog
+			$('#btnSave').on('click', function(){
+				dialog.show();
 			});
 
-			return dialog;
+			// dialog submit
+			dialog.on('submit', function(e, data){
+				data.animate = cache.current.animate;
+				db.set('animate', data);
+				$('#currentAnimate').html(data.name);
+			});
 		});
-
 	});
 
 	page.onload(function(){
@@ -546,17 +568,18 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 			},
 
 			resize: function(){
-				// 初始化动画元素拖拽
-				app.dragDom.on('#apElement');
 				// 初始化窗口高度
 				$('#page-create-animate').height(window.innerHeight);
 				// 初始化画布高度
-				app.current.canvas().height($('.clover-content').height());
+				app.current.creativeCenter().height($('.clover-content').height());
+				// 初始化动画元素拖拽
+				app.dragDom.on('#apElement');
 			}
 		});
 
 	});
 
+	page.dialog = dialog;
 	page.cache = cache;
 	window.page = page;
 	return page;

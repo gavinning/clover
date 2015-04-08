@@ -1,4 +1,4 @@
-define(['zepto', 'page', 'parser', 'db'], function($, Page, Parser, db){
+define(['zepto', 'page', 'parser', 'db', 'clover-view'], function($, Page, Parser, db, View){
 	var page = new Page;
 	var parser = new Parser;
 
@@ -10,6 +10,18 @@ define(['zepto', 'page', 'parser', 'db'], function($, Page, Parser, db){
 	// 播放动画除了需要添加动画本身的类，还需要添加此类
 	var cloverjsAnimatePlay = 'cloverjs-animate-play';
 	var _cloverjsAnimatePlay = '.cloverjs-animate-play';
+
+
+	page.onload(function(){
+
+		this.exports('view', function(){
+			var view = new View;
+
+			view.html({id: 'cloverPhoneView'}).appendTo('#cloverView');
+			view.css().appendTo('head');
+			$('#' + view.id).height(window.innerHeight - $('#cloverFooter').height());
+		});
+	});
 
 	page.extend({
 		id: 'animate',

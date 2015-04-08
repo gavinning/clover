@@ -88,43 +88,51 @@
 
 		</div>
 
-		<div id="cloverDragCanvas" class="clover-drag-area">
+		<div id="cloverCreativeCenter" class="clover-creative-center">
 			<div class="clover-timeline"></div>
-			<img id="apElement" class="ap selected" width="160" src="images/2.png">
+			<div class="clover-canvas-shadow">
+				<div id="shadowOrigin" class="shadow-origin"></div>
+			</div>
+			<div id="cloverDragCanvas" class="clover-drag-area">
+				<div id="apOrigin" class="ap-origin">
+					<img id="apElement" class="ap selected" width="160" src="images/2.png">
+				</div>
+			</div>
 		</div>
 
 		<div class="clover-aside instance-right">
-			<div class="clover-help imp">
-				<h3>创建动画示例操作-1：</h3>
-				<p>1. 点击选中100%关键帧，被选中后灰色色块将变为红色。</p>
-				<p>2. 拖动画布中图片到最右边，点击顶部播放按钮。</p>
+			<div id="cloverNavigator" class="clover-navigator">
+				<div class="title">导航器</div>
+				<table>
+					<tr>
+						<td type="leftTop">左上</td>
+						<td type="top">居上</td>
+						<td type="rightTop">右上</td>
+					</tr>
+					<tr>
+						<td type="left">居左</td>
+						<td type="center">原点</td>
+						<td type="right">居右</td>
+					</tr>
+					<tr>
+						<td type="leftBottom">左下</td>
+						<td type="bottom">居下</td>
+						<td type="rightBottom">右下</td>
+					</tr>
+				</table>
 			</div>
-			<div class="clover-help imp">
-				<h3>创建动画示例操作-2：</h3>
-				<p>1. 刷新页面清空已有动画</p>
-				<p>2. 双击时间轴任意空白处创建自由关键帧，拖动画布中图片到任意你想要的位置。</p>
-				<p>3. 点击选中100%关键帧，拖动画布中图片到任意你想要的位置，不同之前的位置即可。</p>
-				<p>4. 播放</p>
+
+			<div class="lincoapp-clover-slide-options dn">
+				<div class="slide-options">
+					<i id="css_set_background">设置为页面背景</i>
+					<i class="clover-position" type="center">回归原点</i>
+					<i class="clover-position" type="left">左对齐</i>
+					<i class="clover-position" type="right">右对齐</i>
+					<i class="clover-position" type="top">上对齐</i>
+					<i class="clover-position" type="bottom">下对齐</i>
+				</div>
 			</div>
-			<div class="clover-help imp">
-				<h3>创建动画示例操作-3：</h3>
-				<p>1. 左侧是更丰富的动画参数，自由发挥吧，你可以的</p>
-			</div>
-			
-			<div class="clover-help">
-				<h3>一些说明：</h3>
-				<p>1. 首先找到footer上方的时间轴，时间轴上的色块是动画关键帧，用于控制动画流程。</p>
-				<p>2. 灰色固定关键帧：不可拖动，可选中，选中态为红色。</p>
-				<p>3. 蓝色自由关键帧：可拖动，可选中，选中态为红色。</p>
-				<p>4. 0%和100%默认存在，双击时间轴空白处可创建自由关键帧。</p>
-				<p>5. 选中关键帧后即可改变左边侧栏的相关参数，或拖动动画元素位置进行创建动画。</p>
-				<p>6. 所有关键帧动画创建完毕，点击顶部播放按钮即可播放动画。</p>
-			</div>
-			<div class="animate-process" style="display: none;">
-				<button gid="1234" class="btn first selected" value="0%">0%</button>
-				<button gid="2345" class="btn last" value="60%">60%</button>
-				<button gid="3456" class="btn last" value="100%">100%</button>
-			</div>
+
 		</div>
 		
 	</div><!--.clover-content end-->
@@ -150,17 +158,17 @@ require(['zepto', 'home'], function($, home){
 </script>
 <script>
 // 本地环境尝试连接socket服务器
-// if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){
-// 	var socket = io('http://localhost:8080');
-// 	socket.on('ready', function(data){
-// 		console.log(data)
-// 	})
-// 	socket.on('change', function (data) {
-// 		if(data.change){
-// 			location.reload();
-// 		}
-// 	});
-// }
+if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){
+	var socket = io('http://localhost:8080');
+	socket.on('ready', function(data){
+		console.log(data)
+	})
+	socket.on('change', function (data) {
+		if(data.change){
+			location.reload();
+		}
+	});
+}
 </script>
 </body>
 </html>

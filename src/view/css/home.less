@@ -4,9 +4,15 @@
 @import 'common';
 @import 'clover-build-page';
 
+/*页面样式*/
 @import 'page/animate';
 @import 'page/create-animate';
 @import 'page/create-project';
+
+/*业务模块样式*/
+@import 'com/view';
+@import 'com/dialog';
+@import 'com/options';
 
 
 /* 引入组件样式 */
@@ -29,15 +35,10 @@ embed{
 }
 
 .clover-page{
+	position: relative;
 
 	.dn{
 		display: none !important;
-	}
-
-	.clover-drag-area{
-		position: relative;
-		-webkit-box-flex: 1;
-		height: inherit;
 	}
 
 	.btn, .btn1, .btn2{
@@ -75,13 +76,13 @@ embed{
 	.ap{
 		position: absolute;
 		z-index: 10;
-		max-width: 50%;
+
+		&.selected{
+			z-index: 1000;
+			box-shadow: rgba(0, 165, 237, 0.3) 1px 1px 10px 0;
+		}
 	}
-	.ap.selected{
-		z-index: 1000;
-		box-shadow: rgba(0, 165, 237, 0.3) 1px 1px 10px 0;
-	}
-	
+
 	.slide-options{
 
 		i{
