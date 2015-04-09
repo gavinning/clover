@@ -1,9 +1,8 @@
-define(['zepto', 'page', 'parser', 'db', 'clover-view'], function($, Page, Parser, db, View){
+define(['zepto', 'page', 'parser', 'db', 'view'], function($, Page, Parser, db, view){
 	var page = new Page;
 	var parser = new Parser;
 
 	var lib = $('.clover-animate-lib');
-	var thisAnimate = $('#thisAnimate');
 	var isAnimating = false;
 
 	// 触发动画播放的类
@@ -13,36 +12,18 @@ define(['zepto', 'page', 'parser', 'db', 'clover-view'], function($, Page, Parse
 
 
 	page.onload(function(){
+		var thisAnimate;
 
 		this.exports('view', function(){
-			var view = new View;
 
-			view.html({id: 'cloverPhoneView'}).appendTo('#cloverView');
-			view.css().appendTo('head');
-			$('#' + view.id).height(window.innerHeight - $('#cloverFooter').height());
-		});
-	});
+			// 初始化view模块
+			view.initEvent('#cloverView');
+			
+			// 获取动画对象
+			thisAnimate = $('#apElement');
 
-	page.extend({
-		id: 'animate',
-
-		init: function(){
-			console.log('enter animate page.', 123)
-		},
-
-		bind: function(){
-			lib.delegate('.u-lib', 'click', function(){
-				var data, guid;
-
-				// 检查动画状态
-				if(isAnimating) return;
-
-				guid = this.getAttribute('guid');
-				data = page.data[guid];
-
-				thisAnimate.addClass(cloverjsAnimatePlay).addClass(data.className);
-				isAnimating = true;
-			});
+			// 设置预览区域的高度
+			$('#cloverView').height(window.innerHeight - $('#cloverFooter').height());
 
 			// 动画播放完成动作
 			thisAnimate.get(0).addEventListener('webkitAnimationEnd', function(){
@@ -56,13 +37,48 @@ define(['zepto', 'page', 'parser', 'db', 'clover-view'], function($, Page, Parse
 
 			}, false);
 
+			// 绑定动画预览方法
+			lib.delegate('.u-lib', 'click', function(){
+				var data, guid;
+
+				// 检查动画状态
+				if(isAnimating) return;
+
+				guid = this.getAttribute('guid');
+				data = page.data[guid];
+
+				thisAnimate.addClass(cloverjsAnimatePlay).addClass(data.className);
+				isAnimating = true;
+			});
+		});
+
+
+
+
+
+
+
+
+	});
+
+	page.extend({
+		id: 'animate',
+
+		init: function(){
+
+			console.log('enter animate page.', 123)
+		},
+
+		bind: function(){
+
 		},
 
 		insert: function(data){
 			var btn = $('<button class="u-lib"></button>');
 			var style = $('<style></style>');
 
-			btn.attr('guid', data.guid).text(data.name).appendTo(lib);
+			btn.attr('guid', data.guid);
+			btn.text(data.name).appendTo(lib);
 			style.attr('data-id', 'clover-' + data.guid).html(parser.one(data.animate)).appendTo('head');
 		},
 

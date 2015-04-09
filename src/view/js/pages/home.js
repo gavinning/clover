@@ -536,8 +536,21 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 
 			// dialog submit
 			dialog.on('submit', function(e, data){
-				data.animate = cache.current.animate;
+				/* 
+				 * 合并current到data
+				 * 包含5个必须属性
+				 * data.guid 		动画唯一标识
+				 * data.className 	动画核心类，用于启动动画
+				 * data.animate 	动画元数据
+				 * data.type 		动画类型
+				 * data.name 		动画名称
+				 * @type @name来自dialog
+				 * @guid @className @type来自cache.current
+				 */
+				$.extend(data, cache.current);
+				// 存储数据
 				db.set('animate', data);
+				// 页面状态更新
 				$('#currentAnimate').html(data.name);
 			});
 		});

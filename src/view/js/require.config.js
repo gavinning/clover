@@ -4,18 +4,18 @@ require.config({
 	paths : {
 		// 功能模块，与业务无关
 		zepto 		: 'libs/zepto.min',
+		app 		: 'libs/class',
+		package 	: 'libs/package',
+		guid 		: 'libs/guid',
+		page 		: 'libs/page',
 		dragDom 	: 'libs/dom-drag',
 		cssFormat	: 'libs/cssbeautify',
 		mtpl		: 'libs/mtpl',
-		class 		: 'libs/class',
 		dragInpage 	: 'libs/drag',
-		guid 		: 'libs/guid',
 		parser 		: 'libs/parser',
-		page 		: 'libs/page',
 		listen 		: 'libs/listen',
 		timeline	: 'libs/axisAnimation',
 		args 		: 'libs/args',
-		package 	: 'libs/package',
 
 		// 业务模块，严重依赖业务，不可单独拆分使用
 		db 			: 'mods/db',

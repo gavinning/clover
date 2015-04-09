@@ -1,13 +1,12 @@
-define(['zepto', 'page', 'view'], function($, Page, view){
+define(['zepto', 'page', 'package', 'options', 'view'], function($, Page, package, Options, view){
 	var page = new Page;
 
 	page.onload(function(){
 
-		
-		view.render('#test');
+		view.initEvent();
 
-
-
+		var options = new Options;
+		options.initEvent({list: ['123']});
 
 
 		this.exports('view', function(){
@@ -31,5 +30,7 @@ define(['zepto', 'page', 'view'], function($, Page, view){
 		}
 	});
 
+	page.view = view;
+	window.page = page;
 	return page;
 });

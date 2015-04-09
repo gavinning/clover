@@ -1,5 +1,5 @@
-define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'guid', 'animateLib'],
-	function($, Page, Listen, slideOptions, dragDom, dragInpage, Guid, animateLib){
+define(['zepto', 'page', 'listen', 'options', 'dragDom', 'dragInpage', 'guid', 'animateLib'],
+	function($, Page, Listen, Options, dragDom, dragInpage, Guid, animateLib){
 	var page = new Page;
 	var listen = new Listen;
 	var app = page.app;
@@ -315,23 +315,35 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 		this.exports('screen', function(){
 			var slide, data, cloverMoni, self, parent;
 
-			self = this;
-			slide = new slideOptions;
-			cloverMoni = $('#cloverMoni');
-			data = {
+			var options = new Options;
+
+			// options.initEvent('.clover-set-sreen', {
+			// 	selected: 0,
+			// 	list: ['iPhone5', 'iPhone6', 'iPhone6+']
+			// });
+
+			options.html({
 				selected: 0,
 				list: ['iPhone5', 'iPhone6', 'iPhone6+']
-			};
+			}).prependTo('.clover-aside.instance-right');
 
-			// 渲染slide组件
-			slide.html(data).prependTo('.clover-aside.instance-right');
-			parent = $(slide.parent());
+			// self = this;
+			// slide = new slideOptions;
+			// cloverMoni = $('#cloverMoni');
+			// data = {
+			// 	selected: 0,
+			// 	list: ['iPhone5', 'iPhone6', 'iPhone6+']
+			// };
+
+			// // 渲染slide组件
+			// slide.html(data).prependTo('.clover-aside.instance-right');
+			// parent = $(slide.parent());
 
 			// 切换屏幕
-			parent.delegate('i', 'click', function(){
-				app.base.slideItem(this);
-				self.for(this.innerText)
-			});
+			// parent.delegate('i', 'click', function(){
+			// 	app.base.slideItem(this);
+			// 	self.for(this.innerText)
+			// });
 
 			// 切换自定义屏幕
 			$('#setScreen').on('click', function(){
@@ -367,17 +379,22 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 		this.exports('animate', function(){
 			var slide, data, parent;
 
-			slide = new slideOptions;
-			data = {
-				id: 'animateLib',
-				title: '动画库',
-				// todo: for test
-				list: animateLib.animate[0].list
-			}
-			// 渲染动画库
-			slide.html(data).appendTo('.clover-aside.instance-left');
-			parent = $(slide.parent());
+			// slide = new slideOptions;
+			// data = {
+			// 	id: 'animateLib',
+			// 	title: '动画库',
+			// 	// todo: for test
+			// 	list: animateLib.animate[0].list
+			// }
+			// // 渲染动画库
+			// slide.html(data).appendTo('.clover-aside.instance-left');
+			// parent = $(slide.parent());
 
+			var options = new Options;
+
+			options.initEvent('.clover-aside.instance-left', {
+				list: animateLib.animate[0].list
+			});
 
 			// 画布点击事件
 			app.current.canvas().on('click', function(e){
@@ -406,25 +423,25 @@ define(['zepto', 'page', 'listen', 'clover-slide', 'dragDom', 'dragInpage', 'gui
 				$(this).addClass(selected).siblings(_selected).removeClass(selected);
 			});
 
-			// 绑定动画预览方法
-			parent.find('i').on('click', function(e){
-				var name = this.innerText;
+			// // 绑定动画预览方法
+			// parent.find('i').on('click', function(e){
+			// 	var name = this.innerText;
 
-				// 为当前动画对象存储选中的动画
-				app.current.animateName(this.innerText);
+			// 	// 为当前动画对象存储选中的动画
+			// 	app.current.animateName(this.innerText);
 
-				// 高亮当前选中动画
-				app.base.slideItem(this);
+			// 	// 高亮当前选中动画
+			// 	app.base.slideItem(this);
 
-				// 加载动画样式
-				app.animate.loadAnimateStyle(this.innerText, function(){
-					// 播放动画
-					listen.fire('play', app.current.element());
-				});
+			// 	// 加载动画样式
+			// 	app.animate.loadAnimateStyle(this.innerText, function(){
+			// 		// 播放动画
+			// 		listen.fire('play', app.current.element());
+			// 	});
 
-				// app.current.animateName(this.innerText);
-				// listen.fire('play', app.current.element());
-			});
+			// 	// app.current.animateName(this.innerText);
+			// 	// listen.fire('play', app.current.element());
+			// });
 
 			// 全部播放
 			$('#btnPlay').on('click', function(){
