@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Clover-animate</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no" />
+<meta name="author" content="gavinning" />
+<meta name="copyright" content="Copyright (c) 2014-2015 gavinning." />
+<meta name="description" content="Clover" />
+<meta name="format-detection" content="telephone=no">
+<link id="homeStyle" rel="stylesheet" href="css/home.css"/>
+</head>
+
+<body>
+<div class="clover-page clover-page-animate" id="page-animate">
+	<div id="cloverView" class="clover-view"></div>
+	<div id="cloverContent" class="clover-content">
+		<div class="clover-animate-lib">
+		</div>
+	</div>
+	
+	<footer id="cloverFooter" class="clover-footer">lincoapp clover by gavinning@2014-2015</footer>
+</div>
+
+
+<script src="js/libs/socket.io.js"></script>
+<script src="js/require.js"></script>
+<script src="js/require.config.js"></script>
+<script>
+require(['zepto', 'animate'], function($, animate){
+	animate.reg();
+
+	// 设置clover-content最小高度
+	animate.extend({
+		autoScreen: function(){
+			var header, content, footer;
+
+			content = $('#cloverContent');
+			footer = $('#cloverFooter');
+
+			content.css('min-height', window.innerHeight - footer.height());
+		}
+	});
+
+	animate.autoScreen();
+});
+</script>
+<script>
+// 本地环境尝试连接socket服务器
+if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){
+	var socket = io('http://localhost:8080');
+	socket.on('ready', function(data){
+		console.log(data)
+	})
+	socket.on('change', function (data) {
+		if(data.change){
+			location.reload();
+		}
+	});
+}
+</script>
+</body>
+</html>

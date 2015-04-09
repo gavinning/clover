@@ -1,21 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Clover</title>
-<link rel="stylesheet" href="css/home.css">
+<meta charset="utf-8" />
+<title>Clover-home</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no" />
+<meta name="author" content="gavinning" />
+<meta name="copyright" content="Copyright (c) 2014-2015 gavinning." />
+<meta name="description" content="Clover" />
+<meta name="format-detection" content="telephone=no">
+<link id="homeStyle" rel="stylesheet" href="css/home.css"/>
 </head>
 <body>
 
-<div class="clover-page">
-
+<div class="clover-page clover-page-create-animate" id="page-create-animate">
 	<header class="clover-header">
 		<div class="clover-logo"></div>
 		<div class="header-control">
-			
+			<div class="current-animate">当前动画：<span id="currentAnimate">新动画</span></div>
+			<button id="btnCode" class="btn btn-code" title="打印代码"></button>
+			<button id="btnDelete" class="btn btn-delete dn"></button>
 			<button id="btnSave" class="btn btn-save"></button>
-			<button id="btnPlay" class="btn btn-play"></button>
 			<button id="btnAdd" class="btn btn-add dn"></button>
+			<button id="btnPlay" class="btn btn-play" title="播放动画"></button>
 		</div>
 		<div class="header-aside"></div>
 	</header>
@@ -31,8 +37,14 @@
 
 				<label class="effect-label" for="">
 					<strong class="u-title">动画延迟时间</strong>
-					<input sign="delay" class="animate-input" type="text" data-value="0" placeholder="0s">
+					<input sign="delay" class="animate-input" type="text" data-value="0" value="0">
 					<input name="delay" type="range" min="0" max="100" value="0" algorithm="0.1" unit="s">
+				</label>
+
+				<label class="effect-label" for="">
+					<strong class="u-title">动画播放次数</strong>
+					<input sign="count" class="animate-input" type="text" data-value="0" value="1">
+					<input name="count" type="range" min="1" max="100" value="0" algorithm="1" unit="">
 				</label>
 
 				<label class="effect-label" for="">
@@ -76,18 +88,51 @@
 
 		</div>
 
-		<div id="cloverDragCanvas" class="clover-drag-area">
+		<div id="cloverCreativeCenter" class="clover-creative-center">
 			<div class="clover-timeline"></div>
-			<img guid="d54fa4c557aca01e0182d4" class="ap selected" width="160" src="images/2.png">
+			<div class="clover-canvas-shadow">
+				<div id="shadowOrigin" class="shadow-origin"></div>
+			</div>
+			<div id="cloverDragCanvas" class="clover-drag-area">
+				<div id="apOrigin" class="ap-origin">
+					<img id="apElement" class="ap selected" width="160" src="images/2.png">
+				</div>
+			</div>
 		</div>
 
 		<div class="clover-aside instance-right">
-			
-			<div class="animate-process" style="display: none;">
-				<button gid="1234" class="btn first selected" value="0%">0%</button>
-				<button gid="2345" class="btn last" value="60%">60%</button>
-				<button gid="3456" class="btn last" value="100%">100%</button>
+			<div id="cloverNavigator" class="clover-navigator">
+				<div class="title">导航器</div>
+				<table>
+					<tr>
+						<td type="leftTop">左上</td>
+						<td type="top">居上</td>
+						<td type="rightTop">右上</td>
+					</tr>
+					<tr>
+						<td type="left">居左</td>
+						<td type="center">原点</td>
+						<td type="right">居右</td>
+					</tr>
+					<tr>
+						<td type="leftBottom">左下</td>
+						<td type="bottom">居下</td>
+						<td type="rightBottom">右下</td>
+					</tr>
+				</table>
 			</div>
+
+			<div class="lincoapp-clover-slide-options dn">
+				<div class="slide-options">
+					<i id="css_set_background">设置为页面背景</i>
+					<i class="clover-position" type="center">回归原点</i>
+					<i class="clover-position" type="left">左对齐</i>
+					<i class="clover-position" type="right">右对齐</i>
+					<i class="clover-position" type="top">上对齐</i>
+					<i class="clover-position" type="bottom">下对齐</i>
+				</div>
+			</div>
+
 		</div>
 		
 	</div><!--.clover-content end-->
@@ -95,7 +140,22 @@
 </div>
 
 <script src="js/libs/socket.io.js"></script>
-<script data-main="js/init" src="js/require.js"></script>
+<script src="js/require.js"></script>
+<script src="js/require.config.js"></script>
+<script>
+require(['zepto', 'home'], function($, home){
+
+	// Zepto扩展重绘
+	$.fn.reflow =  function (){
+	    this.each(function(){
+	        this.nodeType && this.nodeType==1 && getComputedStyle(this).zoom;
+	    }); 
+	    return this;
+	};
+
+	home.reg();
+});
+</script>
 <script>
 // 本地环境尝试连接socket服务器
 if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){

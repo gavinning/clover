@@ -29,6 +29,12 @@ define(['zepto'], function($){
 				this.init();
 				// 第四步 绑定事件
 				this.bind();
+				// 呈现页面
+				this.load();
+			},
+
+			load: function(){
+				$('body').css('opacity', 1);
 			},
 
 			// 启用rem适配模式
@@ -61,6 +67,24 @@ define(['zepto'], function($){
 			}
 
 		});
+		
+		// 公共方法模块定义
+		this.exports('base', {
+
+			// 用于item切换
+			slideItem: function(obj){
+				$(obj).addClass('selected').siblings('.selected').removeClass('selected');
+			},
+
+			removeItem: function(obj){
+				$(obj).removeClass('selected');
+			},
+
+			delay: function(time, fn){
+				return setTimeout(fn, time);
+			}
+		});
+
 	};
 
 	return Page;

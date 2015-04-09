@@ -86,6 +86,7 @@ define(['zepto', 'guid', 'listen'], function($, guid) {
 			var gid1 = 'process-guid-first', gid2 = 'process-guid-last';
 
 			var html =  '	<div id="'+this.config.wrapper+'"  class="axis-wrapper">'+
+						'		<div id="lightDecoration" class="light-decoration fadeIn"></div>'+
 						'		<div id="'+this.config.axisAnimation+'" class="axis-animation">'+
 						'			<span class="axis-handle-first disabled selected" style="left:0%;" data-id="' +gid1+ '" data-drag="0" data-value="0%"><em class="percent">0%</em></span>'+
 						'			<span class="axis-handle-last disabled" style="right:0%;" data-id="' +gid2+ '" data-drag="0" data-value="100%"><em class="percent">100%</em></span>'+
@@ -108,14 +109,12 @@ define(['zepto', 'guid', 'listen'], function($, guid) {
 
 		//新建关键帧
 		create: function(e){
-			console.log(e)
 			var gid = guid();
 			var axisAnimation = $('#' +this.defaultConfig.axisAnimation),
 				left = Math.round((e.clientX - axisAnimation[0].offsetLeft)/axisAnimation[0].offsetWidth * 100);
 			// var left = e.clientX - e.currentTarget.offsetLeft;
 			// 数遍双击坐标
-			var left = e.layerX - e.currentTarget.offsetLeft;
-			console.log(e.clientX ,e.currentTarget.offsetLeft)
+			var left = e.layerX - this.ui.element.find('span').width()/2;
 			var percent = Math.round((left/axisAnimation[0].offsetWidth) * 100);
 			var index = axisAnimation.find('.axis-handle').length + 1;
 			var str = '<span class="axis-handle" style="left:' +left+ 'px" data-left="' +left+ '" data-id="'+gid+'" data-drag="0" data-value="'+percent+'%"><em class="percent">'+percent+'%</em></span>';

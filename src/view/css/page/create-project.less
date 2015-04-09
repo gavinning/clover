@@ -1,0 +1,143 @@
+.clover-page-create-project{
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	min-height: 800px;
+
+	.clover-drag-area{
+		-webkit-box-flex: 1;
+	}
+
+	.header-control{
+		position: relative;
+	}
+
+	.clover-content{
+		display: -webkit-box;
+		-webkit-box-flex: 1;
+
+		.selected{
+			/*box-shadow: 0 0 10px 2px rgba(0, 165, 237, 0.3);*/
+		}
+	}
+
+	.clover-create-pages{
+		text-align: left;
+		position: absolute;
+		z-index: 100;
+		left: 0;
+		top: 0;
+		width: 70%;
+		height: 100%;
+		overflow: hidden;
+		-webkit-transition: all 300ms ease;
+
+/*		&:hover{
+			width: 120%;
+			background: #fff;
+		}*/
+
+		i{
+			display: inline-block;
+			width: 26px;
+			height: 26px;
+			line-height: 26px;
+			text-align: center;
+			background: #fff;
+			border: 1px solid #d1d1d1;
+			margin-top: 6px;
+			margin-right: 6px;
+			cursor: default;
+
+			&.selected{
+				color: #fff;
+				background: #00A5ED;
+				border-color: #00A5ED;
+				border-radius: 2px;
+			}
+		}
+	}
+
+	.clover-aside{
+
+		&.instance-left{
+			width: 320px;
+		}
+	}
+
+	.clover-aside.instance-right{
+		width: 268px;
+
+		div:first-child .slide-options{
+			display: -webkit-box;
+
+			i:not(:first-child){
+				display: block;
+				-webkit-box-flex: 1;
+				margin-left: 10px;
+			}
+		}
+	}
+
+	.clover-set-sreen{
+		padding: 0 12px 12px;
+
+		input{
+			display: block;
+			width: 50%;
+			height: 26px;
+			border: 1px solid #ccc;
+			-webkit-box-flex: 1;
+			-webkit-box-sizing: border-box;
+
+			&:first-child{
+				margin-right: 10px;
+			}
+		}
+
+		.btn1{
+			width: 100%;
+			margin-top: 16px;
+		}
+	}
+
+	.clover-moni{
+		width: 320px;
+		height: 568px;
+		display: -webkit-box;
+		-webkit-box-pack: center;
+		-webkit-box-align: center;
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		margin: -284px 0 0 -160px;
+		outline: 1px dashed rgba(231, 203, 9, 0.8);
+	}
+
+	.forms{
+		padding: 0 12px;
+
+		input{
+			margin: 4px 0;
+		}
+
+		input[sign]{
+			width: 100%;
+			height: 26px;
+			border: 1px solid #ccc;
+			-webkit-box-sizing: border-box;
+		}
+
+		input[type="range"]{
+			width: 100%;
+		}
+
+		input.gray{
+			background: #efefef;
+
+			&:focus{
+				background: #fff;
+			}
+		}
+	}
+}
