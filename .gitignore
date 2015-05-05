@@ -1,3 +1,4 @@
 tmp/
 *.psb
-tmp/
+node_modules/
+recycle/

@@ -10,10 +10,9 @@
 
  */
 
-define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat', 'dialog', 'db', 'guid'],
-	function($, Page, dragDom, Listen, Parser, Timeline, cssFormat, dialog, db, Guid){
+define(['jq', 'page', 'dragDom', 'listen', 'parserCss', 'timeline', 'cssFormat', 'dialog', 'db', 'guid'],
+	function($, Page, dragDom, listen, Parser, Timeline, cssFormat, dialog, db, Guid){
 	var page = new Page;
-	var listen = new Listen;
 	var parser = new Parser;
 	var app = page.app;
 	var cache = {};
@@ -84,6 +83,11 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 			// 返回当前画布对象
 			canvas: function(){
 				return $('#cloverDragCanvas')
+			},
+
+			// 返回当前画布对象
+			canvasParent: function(){
+				return $('#canvasParent')
 			},
 
 			// 返回当前动画对象原点
@@ -162,7 +166,7 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				$(this).parent().siblings('[sign="function"]').val(this.innerText);
 
 				// 结束动画
-				listen.fire('stop');
+				// listen.fire('stop');
 
 				// 保存并预览
 				listen.fire('save');
@@ -339,8 +343,9 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 
 		// 创作中心相关操作
 		this.exports('nav', function(){
-			var ap, canvas, origin, shadowOrigin;
+			var ap, parent, canvas, origin, shadowOrigin;
 
+			parent = app.current.canvasParent();
 			canvas = app.current.canvas();
 			ap = app.current.element();
 			origin = app.current.origin();
@@ -375,35 +380,75 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				},
 
 				left: function(){
-					ap.css('top', 0).css('left', -canvas.width()/2 + ap.width()/2);
+					// 画布算法
+					// ap.css('top', 0).css('left', -canvas.width()/2 + ap.width()/2);
+
+					// 父级画布算法
+					ap.css('top', 0)
+					.css('left', -parent.width() - canvas.css('left').toNumber() + ap.width()/2);
 				},
 
 				right: function(){
-					ap.css('top', 0).css('left', canvas.width()/2 - ap.width()/2);
+					// 画布算法
+					// ap.css('top', 0).css('left', canvas.width()/2 - ap.width()/2);
+
+					// 父级画布算法
+					ap.css('top', 0)
+					.css('left', -canvas.css('left').toNumber() - ap.width()/2);
 				},
 
 				top: function(){
-					ap.css('left', 0).css('top', -canvas.height()/2 + ap.height()/2);
+					// 画布算法
+					// ap.css('left', 0).css('top', -canvas.height()/2 + ap.height()/2);
+
+					// 父级画布算法
+					ap.css('left', 0)
+					.css('top', -parent.height() - canvas.css('top').toNumber() + ap.height()/2);
 				},
 
 				bottom: function(){
-					ap.css('left', 0).css('top', canvas.height()/2 - ap.height()/2);
+					// 画布算法
+					// ap.css('left', 0).css('top', canvas.height()/2 - ap.height()/2);
+
+					// 父级画布算法
+					ap.css('left', 0)
+					.css('top', -canvas.css('top').toNumber() - ap.height()/2);
 				},
 
 				leftTop: function(){
-					ap.css('left', -canvas.width()/2 + ap.width()/2).css('top', -canvas.height()/2 + ap.height()/2);
+					// 画布算法
+					// ap.css('left', -canvas.width()/2 + ap.width()/2).css('top', -canvas.height()/2 + ap.height()/2);
+
+					// 父级画布算法
+					ap.css('left', -parent.width() - canvas.css('left').toNumber() + ap.width()/2)
+					.css('top', -parent.height() - canvas.css('top').toNumber() + ap.height()/2);
 				},
 
 				leftBottom: function(){
-					ap.css('left', -canvas.width()/2 + ap.width()/2).css('top', canvas.height()/2 - ap.height()/2);
+					// 画布算法
+					// ap.css('left', -canvas.width()/2 + ap.width()/2).css('top', canvas.height()/2 - ap.height()/2);
+
+					// 父级画布算法
+					ap.css('left', -parent.width() - canvas.css('left').toNumber() + ap.width()/2)
+					.css('top', -canvas.css('top').toNumber() - ap.height()/2);
 				},
 
 				rightTop: function(){
-					ap.css('left', canvas.width()/2 - ap.width()/2).css('top', -canvas.height()/2 + ap.height()/2);
+					// 画布算法
+					// ap.css('left', canvas.width()/2 - ap.width()/2).css('top', -canvas.height()/2 + ap.height()/2);
+
+					// 父级画布算法
+					ap.css('left', -canvas.css('left').toNumber() - ap.width()/2)
+					.css('top', -parent.height() - canvas.css('top').toNumber() + ap.height()/2);
 				},
 
 				rightBottom: function(){
-					ap.css('left', canvas.width()/2 - ap.width()/2).css('top', canvas.height()/2 - ap.height()/2);
+					// 画布算法
+					// ap.css('left', canvas.width()/2 - ap.width()/2).css('top', canvas.height()/2 - ap.height()/2);
+
+					// 父级画布算法
+					ap.css('left', -canvas.css('left').toNumber() - ap.width()/2)
+					.css('top', -canvas.css('top').toNumber() - ap.height()/2);
 				},
 			}
 		});
@@ -417,12 +462,27 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 			$('#btnPlay').on('click', function(){
 				listen.fire('save');
 				listen.fire('play');
+
+				// 阻止因为选中状态导致空格键和回车键会重新触发该事件
+				this.blur();
 			});
 
 			// 展示css代码
 			$('#btnCode').on('click', function(){
-				var css = $('style[data-id="clover"]').text();
-				console.log(cssFormat(css))
+				var css, dialog, textarea;
+
+				css = $('style[data-id="clover"]').text();
+				textarea = $(document.createElement('textarea'));
+				textarea.width(800).height(600);
+				dialog = window.open('', '', '');
+				dialog.opener = null;
+				dialog.document.write(textarea.get(0).outerHTML);
+				dialog.document.write('<div id="code" style="display: none">'+cssFormat(css)+'</div>');
+				dialog.document.write('<script>document.querySelector("textarea").value=document.querySelector("#code").innerHTML</script>');
+				dialog.document.close();
+
+				// 阻止因为选中状态导致空格键和回车键会重新触发该事件
+				this.blur();
 			});
 
 			// 动画播放完成动作
@@ -441,6 +501,7 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				}, 200)
 
 			}, false);
+
 
 			return {
 				// 动画绝对定位位置清零
@@ -527,7 +588,7 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 		// dialog模块相关
 		this.exports('dialog', function(){
 			// 初始化dialog和事件
-			dialog.initEvent();
+			dialog.reg();
 
 			// 启用dialog
 			$('#btnSave').on('click', function(){
@@ -563,8 +624,20 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 			init: function(){
 				// 初始化动画对象
 				app.current.init();
-
 				this.resize();
+
+
+				// 画布允许移动
+				$(document).on('keydown', function(e){
+					e.keyCode === 32 ?
+					app.current.canvas().attr('dragEnd', false).css('cursor', '-webkit-grab'):'';
+				});
+
+				// 画布停止移动
+				$(document).on('keyup', function(e){
+					e.keyCode === 32 ?
+					app.current.canvas().attr('dragEnd', true).css('cursor', 'default'):'';
+				});
 			},
 
 			// 执行全局事件监听
@@ -587,6 +660,24 @@ define(['zepto', 'page', 'dragDom', 'listen', 'parser', 'timeline', 'cssFormat',
 				app.current.creativeCenter().height($('.clover-content').height());
 				// 初始化动画元素拖拽
 				app.dragDom.on('#apElement');
+
+				// 移动画布
+				this.exports(function(){
+					var parent = app.current.canvasParent();
+					var canvas = app.current.canvas();
+
+					var x, y, xm, ym;
+
+					x = -parent.width();
+					y = -parent.height();
+					xm = 0;
+					ym = 0;
+
+					// 画布可移动初始化
+					dragDom.init(document.querySelector('#cloverDragCanvas'), null, x, xm, y, ym);
+					// 画布初始位置初始化
+					canvas.css('left', x/2).css('top', y/2);
+				});
 			}
 		});
 

@@ -8,11 +8,11 @@
  */
 
 define(function(){
-	function Listen() {
-		var map = {};
-		var defaultStatus = 'defaultStatus';
-
-		this.on = function(id, fn){
+	var map = {};
+	var defaultStatus = 'defaultStatus';
+	
+	return {
+		on: function(id, fn){
 			var name, status, arr;
 
 			// 拆分订阅id
@@ -39,33 +39,51 @@ define(function(){
 
 			// 添加订阅信息
 			map[name].events[status].push(fn);
-		};
+		},
 
-		this.off = function(){
-			console.log('listen.off 尚未开发，请联系作者')
-		};
+		off: function(id){
+			var name, status, arr;
 
-		this.fire = function(id){
-			var arr, name, status, args;
+			// 拆分订阅id
+			arr = id.split('.');
+			// 订阅的消息命名空间
+			name = arr[0];
+			// 订阅的消息状态
+			status = arr[1] || defaultStatus;
+
+			// 清空订阅信息
+			if(map[name]){
+				map[name].events[status] = [];
+			}
+		},
+
+		fire: function(id){
+			var arr, name, status, args, thisEvent;
+
+			if(!id) return;
 
 			arr = id.split('.');
 			name = arr[0];
 			status = arr[1] || defaultStatus;
 			args = [].slice.call(arguments, 1);
 
+			// 生成自定义事件
+			thisEvent = new Event(name);
+			thisEvent.name = id;
+			thisEvent.status = status;
+			thisEvent.arguments = args;
+
 			// 检查是否有订阅者
-			if(!map[name]) return;
+			if(!map[name] || !map[name].events || !map[name].events[status]) return;
 
 			// 执行消息分发
 			map[name].events[status].forEach(function(item){
-				item.apply(null, args);
+				item.apply(thisEvent, args);
 			});
 			// 更新订阅状态
 			map[name].status = status;
-		};
-
-	};
-	return Listen;
+		}
+	}
 });
 
 

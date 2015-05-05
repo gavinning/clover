@@ -1,4 +1,6 @@
-define(['zepto'], function($) {
+// drag(target, function(url, base64){})
+
+define(function() {
 
 	var drag = function(target, callback){
 		typeof target === 'string' ?

@@ -1,4 +1,4 @@
-define(['zepto', 'package', 'text!coms/dialog.html'], function($, Package, dom){
+define(['jq', 'package', 'text!coms/dialog.html'], function($, Package, dom){
 	var dialog = new Package(dom);
 
 	dialog.extend({

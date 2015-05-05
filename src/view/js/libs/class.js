@@ -18,7 +18,7 @@ person.app[name];				// app为插件命名空间，person.app[name]访问插件
 
  */
 
-define(['zepto'], function($){
+define(['jq'], function($){
 
 	// 父类
 	var App = function(parent) {
@@ -27,6 +27,33 @@ define(['zepto'], function($){
 		// 子类
 		app = function() {
 			this.args.apply(this, arguments);
+			// 插件命名空间
+			this.app = new Object();
+			// 基础插件
+			this.app.base = {
+
+				// 用于item切换
+				slideItem: function(obj){
+					$(obj).addClass('selected').siblings('.selected').removeClass('selected');
+				},
+
+				removeItem: function(obj){
+					$(obj).removeClass('selected');
+				},
+
+				// 专用于动画ap属性切换
+				slideAp: function(obj){
+					$(obj).attr('ap', 'selected').siblings('[ap="selected"]').attr('ap', 'ap');
+				},
+
+				delay: function(time, fn){
+					if(typeof time === 'function'){
+						fn = time;
+						time = 0;
+					};
+					return setTimeout(fn, time);
+				}
+			};
 		};
 
 		// 是否存在需要继承的对象
@@ -53,47 +80,34 @@ define(['zepto'], function($){
 
 		// 扩展插件
 		app.fn.extend({
-			// 插件入口
-			app: {},
+			// 类实例公有 环境变量方法
+			current: {},
 
 			// 插件入口
 			exports: function(id, fn){
+				var obj = {};
+
+				obj.extend = this.extend;
 
 				// 当id为匿名函数，返回运行结果
 				if($.isFunction(id)){
-					return id()
+					obj.id = null;
+					obj.type =  null;
+					return id.call(obj)
 				}
 
 				if(typeof id === 'string'){
-					$.type(fn) === 'function' ? this.app[id] = fn.call({extend: this.extend}) : this.app[id] = fn;
+					obj.id = id;
+					obj.type = id;
+					$.type(fn) === 'function' ? this.app[id] = fn.call(obj) : this.app[id] = fn;
 				}
 			}
 
-		});
-		
-		// 公共方法模块定义
-		app.fn.exports('base', {
-
-			// 用于item切换
-			slideItem: function(obj){
-				$(obj).addClass('selected').siblings('.selected').removeClass('selected');
-			},
-
-			removeItem: function(obj){
-				$(obj).removeClass('selected');
-			},
-
-			delay: function(time, fn){
-				if(typeof time === 'function'){
-					fn = time;
-					time = 0;
-				};
-				return setTimeout(fn, time);
-			}
 		});
 
 		return app;
 	};
 
+	
 	return App;
 });

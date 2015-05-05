@@ -37,7 +37,7 @@
 
 				<label class="effect-label" for="">
 					<strong class="u-title">动画延迟时间</strong>
-					<input sign="delay" class="animate-input" type="text" data-value="0" value="0">
+					<input sign="delay" class="animate-input" type="text" data-value="0" value="0s">
 					<input name="delay" type="range" min="0" max="100" value="0" algorithm="0.1" unit="s">
 				</label>
 
@@ -61,7 +61,7 @@
 			</div>
 
 			<div class="forms animate-effect">
-				<label class="effect-label" for="">
+				<label class="effect-label dn" for="">
 					<strong class="u-title">位移</strong>
 					<input sign="translate3d" class="animate-input process-input gray" type="text" data-value="0%,0%,0%" placeholder="0%, 0%, 0%">
 				</label>
@@ -83,26 +83,26 @@
 					<input sign="scale" class="animate-input process-input" type="text" placeholder="1">
 					<input name="scale" type="range" min="0" max="100" value="100" algorithm="0.01">
 				</label>
-
 			</div>
-
 		</div>
 
 		<div id="cloverCreativeCenter" class="clover-creative-center">
 			<div class="clover-timeline"></div>
-			<div class="clover-canvas-shadow">
+			<div class="clover-canvas-shadow dn">
 				<div id="shadowOrigin" class="shadow-origin"></div>
 			</div>
-			<div id="cloverDragCanvas" class="clover-drag-area">
-				<div id="apOrigin" class="ap-origin">
-					<img id="apElement" class="ap selected" width="160" src="images/2.png">
+			<div id="canvasParent" class="large-canvas">
+				<div id="cloverDragCanvas" class="clover-drag-area" dragEnd="true">
+					<div id="apOrigin" class="ap-origin">
+						<img id="apElement" class="ap selected" width="160" src="images/2.png">
+					</div>
 				</div>
-			</div>
+			</div>	
 		</div>
 
 		<div class="clover-aside instance-right">
 			<div id="cloverNavigator" class="clover-navigator">
-				<div class="title">导航器</div>
+				<div class="title dn">导航器</div>
 				<table>
 					<tr>
 						<td type="leftTop">左上</td>
@@ -122,17 +122,6 @@
 				</table>
 			</div>
 
-			<div class="lincoapp-clover-slide-options dn">
-				<div class="slide-options">
-					<i id="css_set_background">设置为页面背景</i>
-					<i class="clover-position" type="center">回归原点</i>
-					<i class="clover-position" type="left">左对齐</i>
-					<i class="clover-position" type="right">右对齐</i>
-					<i class="clover-position" type="top">上对齐</i>
-					<i class="clover-position" type="bottom">下对齐</i>
-				</div>
-			</div>
-
 		</div>
 		
 	</div><!--.clover-content end-->
@@ -143,7 +132,7 @@
 <script src="js/require.js"></script>
 <script src="js/require.config.js"></script>
 <script>
-require(['zepto', 'home'], function($, home){
+require(['jq', 'home'], function($, home){
 
 	// Zepto扩展重绘
 	$.fn.reflow =  function (){
@@ -158,17 +147,17 @@ require(['zepto', 'home'], function($, home){
 </script>
 <script>
 // 本地环境尝试连接socket服务器
-if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){
-	var socket = io('http://localhost:8080');
-	socket.on('ready', function(data){
-		console.log(data)
-	})
-	socket.on('change', function (data) {
-		if(data.change){
-			location.reload();
-		}
-	});
-}
+// if(location.hostname.indexOf('127') >= 0 || location.hostname.indexOf('localhost') >= 0){
+// 	var socket = io('http://localhost:8080');
+// 	socket.on('ready', function(data){
+// 		console.log(data)
+// 	})
+// 	socket.on('change', function (data) {
+// 		if(data.change){
+// 			location.reload();
+// 		}
+// 	});
+// }
 </script>
 </body>
 </html>

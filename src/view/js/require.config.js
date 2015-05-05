@@ -3,7 +3,7 @@ require.config({
 
 	paths : {
 		// 功能模块，与业务无关
-		zepto 		: 'libs/zepto.min',
+		jq 			: 'libs/jquery.min',
 		app 		: 'libs/class',
 		package 	: 'libs/package',
 		guid 		: 'libs/guid',
@@ -13,6 +13,7 @@ require.config({
 		mtpl		: 'libs/mtpl',
 		dragInpage 	: 'libs/drag',
 		parser 		: 'libs/parser',
+		parserCss 	: 'libs/parserCss',
 		listen 		: 'libs/listen',
 		timeline	: 'libs/axisAnimation',
 		args 		: 'libs/args',
@@ -51,8 +52,8 @@ require.config({
 	],
 
 	shim:{
-		'zepto': { 
-			exports: 'Zepto'
+		'jq': { 
+			exports: 'jQuery'
 		}
 	},
 

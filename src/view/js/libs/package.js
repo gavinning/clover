@@ -1,4 +1,4 @@
-define(['zepto', 'app', 'mtpl', 'guid'], function($, App, mtpl, guid){
+define(['jq', 'app', 'mtpl', 'guid'], function($, App, mtpl, guid){
 	var Package = new App;
 
 	// 开放api
@@ -15,16 +15,23 @@ define(['zepto', 'app', 'mtpl', 'guid'], function($, App, mtpl, guid){
 		// 组件初始化方法，不包含事件初始化，渲染到页面
 		init: function(selector, data){
 			this.check(selector, data);
+			this.mustEvent();
 		},
 
 		// 组件初始化方法，包含事件初始化
-		initEvent: function(selector, data){
+		reg: function(selector, data){
 			this.check(selector, data);
+			this.mustEvent();
 			this.Event();
 		},
 
 		// 初始化事件，此方法在组件js内定义
 		Event: function(){
+			// extend in instance
+		},
+
+		// 初始化必须事件
+		mustEvent: function(){
 			// extend in instance
 		},
 		

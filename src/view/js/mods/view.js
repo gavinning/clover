@@ -1,4 +1,4 @@
-define(['zepto', 'package', 'dragDom', 'text!coms/view.html'], function($, Package, dragDom, dom){
+define(['jq', 'package', 'dragDom', 'text!coms/view.html'], function($, Package, dragDom, dom){
 	var view = new Package(dom);
 	var app = view.app;
 
@@ -39,6 +39,11 @@ define(['zepto', 'package', 'dragDom', 'text!coms/view.html'], function($, Packa
 
 		Event: function(){
 			this.app.dragDom.on('#apElement');
+
+			// todo: for test
+			if(this.element().parent().get(0).tagName === 'BODY'){
+				this.element().height(window.innerHeight);
+			}
 		},
 
 		// apElement位置

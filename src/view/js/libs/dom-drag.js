@@ -5,6 +5,11 @@
  **************************************************
  * 10.28.2001 - fixed minor bug where events
  * sometimes fired off the handle, not the root.
+ **************************************************
+ * by gavining 2015-04
+ * 
+ * 1.drag.start 增加阻止冒泡，以构建多重拖拽
+ * 2.drag.start 增加拖拽停止程式
  **************************************************/
 
 define(function(){
@@ -42,6 +47,16 @@ var Drag = {
 
 	start : function(e)
 	{
+
+		// 阻止冒泡，以实现多重拖拽 by gavinning
+		// e.preventDefault();
+		// e.stopPropagation();
+
+		// 设定停止拖拽 by gavinning
+		if(this.getAttribute('dragEnd') === 'true'){
+			return
+		}
+
 		var o = Drag.obj = this;
 		e = Drag.fixE(e);
 		var y = parseInt(o.vmode ? o.root.style.top  : o.root.style.bottom);
